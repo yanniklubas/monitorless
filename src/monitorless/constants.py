@@ -64,3 +64,5 @@ POTENTIALLY_NAN_COLUMNS: set[str] = {
     "container_fs_writes_bytes_total",
     "container_cpu_cfs_periods_total",
 }
+
+LABEL_COLUMN: str = "label"
