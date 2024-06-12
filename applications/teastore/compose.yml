@@ -1,0 +1,105 @@
+services:
+  registry:
+    image: descartesresearch/teastore-registry
+    expose:
+      - "8080"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+  db:
+    image: descartesresearch/teastore-db
+    expose:
+      - "3306"
+    ports:
+      - "3306:3306"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+  persistence:
+    image: descartesresearch/teastore-persistence
+    expose:
+      - "8080"
+    environment:
+      HOST_NAME: "persistence"
+      REGISTRY_HOST: "registry"
+      DB_HOST: "db"
+      DB_PORT: "3306"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+  auth:
+    image: descartesresearch/teastore-auth
+    expose:
+      - "8080"
+    environment:
+      HOST_NAME: "auth"
+      REGISTRY_HOST: "registry"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+  image:
+    image: descartesresearch/teastore-image
+    expose:
+      - "8080"
+    environment:
+      HOST_NAME: "image"
+      REGISTRY_HOST: "registry"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+  recommender:
+    image: descartesresearch/teastore-recommender
+    expose:
+      - "8080"
+    environment:
+      HOST_NAME: "recommender"
+      REGISTRY_HOST: "registry"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+  webui:
+    image: descartesresearch/teastore-webui
+    expose:
+      - "8080"
+    environment:
+      HOST_NAME: "webui"
+      REGISTRY_HOST: "registry"
+    ports:
+      - "8080:8080"
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+  cadvisor:
+    privileged: true
+    image: gcr.io/cadvisor/cadvisor:v0.47.2
+    ports:
+      - 5050:8080
+    devices:
+      - /dev/kmsg
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    depends_on:
+      - webui
+    expose:
+      - '8080'
+  prometheus:
+    image: prom/prometheus:v2.49.1
+    ports:
+      - 9090:9090
+    volumes:
+      - $PWD/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - $PWD/metrics:/prometheus:rw
+    depends_on:
+      - cadvisor
+    user: ${PROMETHEUS_UID?PROMETHEUS_UID unset}:${PROMETHEUS_GID?PROMETHEUS_GID unset}

@@ -1,0 +1,77 @@
+services:
+  - service_name: teastore
+    protocol: http
+    response_content_type: ignore
+    hosts:
+      - "{{APPLICATION_HOST}}/tools.descartes.teastore.webui/"
+user_requests:
+  - service_name: teastore
+    method: GET
+    uri:
+      text: ''
+  - service_name: teastore
+    method: GET
+    uri:
+      text: 'login'
+  - service_name: teastore
+    method: POST
+    uri:
+      type: COMPOSITE
+      children:
+        - text: 'loginAction?username=user'
+        - type: RANDOMINT
+          text: 1,91
+        - text: '&password=password'
+    expected_response_codes:
+      - 302
+  - service_name: teastore
+    method: POST
+    uri:
+      type: TEMPLATE
+      text: 'category?page=1&category=#RANDOMINT{(2,7)}&number=30'
+    expected_response_codes:
+      - 302
+  - service_name: teastore
+    method: GET
+    uri:
+      type: TEMPLATE
+      text: 'product?id=#RANDOMINT{(7,507)}'
+  - service_name: teastore
+    method: POST
+    uri:
+      type: TEMPLATE
+      text: 'cartAction?addToCart=&productid=#RANDOMINT{(7,507)}'
+    expected_response_codes:
+      - 302
+  - service_name: teastore
+    method: GET
+    uri:
+      type: TEMPLATE
+      text: 'category?page=1&category=#RANDOMINT{(2,7)}'
+  - service_name: teastore
+    method: POST
+    uri:
+      type: TEMPLATE
+      text: 'category?page=1&category=#RANDOMINT{(2,7)}'
+  - service_name: teastore
+    method: POST
+    uri:
+      type: TEMPLATE
+      text: 'cartAction?addToCart=&productid=#RANDOMINT{(7,507)}'
+    expected_response_codes:
+      - 302
+  - service_name: teastore
+    method: GET
+    uri:
+      text: 'profile'
+    expected_response_codes:
+      - 200
+      - 201
+      - 202
+      - 302
+  - service_name: teastore
+    method: POST
+    uri:
+      text: 'loginAction?logout='
+    expected_response_codes:
+      - 302
