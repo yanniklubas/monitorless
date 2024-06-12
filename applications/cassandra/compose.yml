@@ -1,0 +1,36 @@
+services:
+  cassandra:
+    image: cloudsuite/data-serving:server
+    network_mode: host
+    volumes:
+      - cassandra-data:/var/lib/cassndra:rw
+    command: "--heap-size=24 --writer-count=128"
+  cadvisor:
+    privileged: true
+    image: gcr.io/cadvisor/cadvisor:v0.47.2
+    ports:
+      - 5050:8080
+    devices:
+      - /dev/kmsg
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    depends_on:
+      - cassandra
+    expose:
+      - '8080'
+  prometheus:
+    image: prom/prometheus:v2.49.1
+    ports:
+      - 9090:9090
+    volumes:
+      - $PWD/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - $PWD/metrics:/prometheus:rw
+    depends_on:
+      - cadvisor
+    user: ${PROMETHEUS_UID?PROMETHEUS_UID unset}:${PROMETHEUS_GID?PROMETHEUS_GID unset}
+volumes:
+  cassandra-data:

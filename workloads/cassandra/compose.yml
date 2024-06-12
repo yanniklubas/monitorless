@@ -1,0 +1,18 @@
+services:
+  cassandra-client:
+    build: .
+    network_mode: host
+    volumes:
+      - ${PWD}/entrypoint.sh:/entrypoint.sh
+    entrypoint: ["/entrypoint.sh"]
+    environment:
+      - DO_SEED=$DO_SEED
+      - SERVER_IP=$SERVER_IP
+      - RECORD_COUNT=$RECORD_COUNT
+      - WARMUP_DURATION=$WARMUP_DURATION
+      - WARMUP_RATE=$WARMUP_RATE
+      - MINIMUM_RPS=$MINIMUM_RPS
+      - MAXIMUM_RPS=$MAXIMUM_RPS
+      - TEST_DURATION_SEC=$TEST_DURATION_SEC
+      - LOAD_STEP_DURATION=$LOAD_STEP_DURATION
+      - WORKLOAD=$WORKLOAD
