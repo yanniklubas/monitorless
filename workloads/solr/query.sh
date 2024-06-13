@@ -2,7 +2,7 @@
 
 IP=$1
 SOLR_PORT=8983
-until curl --output /dev/null --silent --head --fail http://"$IP":"$SOLR_PORT"; do
+until curl --output /dev/null --silent --head --fail "http://$IP:$SOLR_PORT"; do
 	printf '.'
 	sleep 5
 done
