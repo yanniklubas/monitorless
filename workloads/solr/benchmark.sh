@@ -96,7 +96,7 @@ if [ -z "$SERVER_IP" ]; then
 	printf "invalid arguments: server ip must be set using --ip=<ip>\n" 1>&2
 	exit 1
 fi
-if [ -z "$DURATION" ]; then
+if [ -z "$BENCHMARK_DURATION" ]; then
 	printf "invalid arguments: benchmark duration must be set using --duration=<duration>\n" 1>&2
 	exit 1
 fi
@@ -154,7 +154,7 @@ fi
 	printf "cpus: %d\n" "$CPUS" >"$CONFIG_FILE"
 	printf "memory: %s\n" "$MEMORY" >"$CONFIG_FILE"
 	printf "server_ip: %s\n" "$SERVER_IP" >"$CONFIG_FILE"
-	printf "duration: %d\n" "$DURATION" >"$CONFIG_FILE"
+	printf "duration: %d\n" "$BENCHMARK_DURATION" >"$CONFIG_FILE"
 	printf "threads: %d\n" "$DIRECTOR_THREADS" >"$CONFIG_FILE"
 	printf "virtual_users: %d\n" "$VIRTUAL_USER" >"$CONFIG_FILE"
 	printf "timeout: %d\n" "$TIMEOUT" >"$CONFIG_FILE"
@@ -168,6 +168,6 @@ fi
 	printf "Waiting on Solr server."
 	bash query.sh
 	YAML_PATH="$WORKLOAD_FILE" BENCHMARK_RUN="$RUN_DIR" PROFILE="$PROFILE" BENCHMARK_DURATION="$BENCHMARK_DURATION" DIRECTOR_THREADS="$DIRECTOR_THREADS" VIRTUAL_USERS="$VIRTUAL_USER" TIMEOUT="$TIMEOUT" WARMUP_DURATION="$WARMUP_DURATION" WARMUP_RPS="$WARMUP_RPS" WARMUP_PAUSE="$WARMUP_PAUSE" docker compose up --build --abort-on-container-exit --force-recreate
-	ssh "$USER"@"$SERVER_IP" 'cd monitorless/applications/solr; tar --no-xattrs czf metrics.tar.gz metrics/'
+	ssh "$USER"@"$SERVER_IP" 'cd monitorless/applications/solr; PROMETHEUS_UID="$(id -u)" PROMETHEUS_GID="$(id -g)" HEAP_MEMORY='"$MEMORY"' CPUS='"$CPUS"'docker compose down; tar --no-xattrs czf metrics.tar.gz metrics/'
 	scp "$USER"@"$SERVER_IP":monitorless/applications/solr/metrics.tar.gz "$RUN_DIR/metrics.tar.gz"
 )
