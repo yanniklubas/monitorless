@@ -4,7 +4,11 @@ services:
     network_mode: host
     volumes:
       - cassandra-data:/var/lib/cassndra:rw
-    command: "--heap-size=24 --writer-count=128"
+    command: "--heap-size=$HEAP_MEMORY --writer-count=128"
+    deploy:
+      resources:
+        limits:
+          cpus: $CPUS
   cadvisor:
     privileged: true
     image: gcr.io/cadvisor/cadvisor:v0.47.2
