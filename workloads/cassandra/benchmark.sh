@@ -181,6 +181,6 @@ fi
 	sleep "$WAIT"
 	DO_SEED=0 SERVER_IP="$SERVER_IP" RECORD_COUNT="$RECORD_COUNT" WARMUP_DURATION="$WARMUP_DURATION" WARMUP_RPS="$WARMUP_RPS" WARMUP_PAUSE="$WARMUP_PAUSE" MINIMUM_RPS="$MINIMUM_RPS" MAXIMUM_RPS="$MAXIMUM_RPS" BENCHMARK_DURATION="$BENCHMARK_DURATION" STEP_DURATION="$STEP_DURATION" WORKLOAD="$WORKLOAD" docker compose up --force-recreate --build
 	docker compose logs --no-log-prefix cassandra-client >"$RUN_DIR/summary.log"
-	ssh "$USER"@"$SERVER_IP" 'cd monitorless/applications/cassandra; PROMETHEUS_UID="$(id -u)" PROMETHEUS_GID="$(id -g)" HEAP_MEMORY='"$MEMORY"' docker compose down; tar --no-xattrs czf metrics.tar.gz metrics/'
+	ssh "$USER"@"$SERVER_IP" 'cd monitorless/applications/cassandra; PROMETHEUS_UID="$(id -u)" PROMETHEUS_GID="$(id -g)" HEAP_MEMORY='"$MEMORY"' docker compose down; tar --no-xattrs -czf metrics.tar.gz metrics/'
 	scp "$USER"@"$SERVER_IP":monitorless/applications/cassandra/metrics.tar.gz "$RUN_DIR/metrics.tar.gz"
 )
