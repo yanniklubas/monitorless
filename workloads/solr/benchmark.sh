@@ -148,24 +148,26 @@ fi
 	fi
 	mkdir -p "$RUN_DIR"
 	CONFIG_FILE="$RUN_DIR/config.yml"
-	printf "Saving benchmark configuration to %s" "$CONFIG_FILE" 1>&2
+	printf "Saving benchmark configuration to %s\n" "$CONFIG_FILE" 1>&2
 	touch "$CONFIG_FILE"
 	printf "profile: %s\n" "$PROFILE" >"$CONFIG_FILE"
-	printf "cpus: %d\n" "$CPUS" >"$CONFIG_FILE"
-	printf "memory: %s\n" "$MEMORY" >"$CONFIG_FILE"
-	printf "server_ip: %s\n" "$SERVER_IP" >"$CONFIG_FILE"
-	printf "duration: %d\n" "$BENCHMARK_DURATION" >"$CONFIG_FILE"
-	printf "threads: %d\n" "$DIRECTOR_THREADS" >"$CONFIG_FILE"
-	printf "virtual_users: %d\n" "$VIRTUAL_USER" >"$CONFIG_FILE"
-	printf "timeout: %d\n" "$TIMEOUT" >"$CONFIG_FILE"
-	printf "warmup_duration: %d\n" "$WARMUP_DURATION" >"$CONFIG_FILE"
-	printf "warmup_rps: %d\n" "$WARMUP_RPS" >"$CONFIG_FILE"
-	printf "warmup_pause: %d\n" "$WARMUP_PAUSE" >"$CONFIG_FILE"
-	printf "workload: %s\n" "$WORKLOAD_FILE" >"$CONFIG_FILE"
+	{
+		printf "cpus: %d\n" "$CPUS"
+		printf "memory: %s\n" "$MEMORY"
+		printf "server_ip: %s\n" "$SERVER_IP"
+		printf "duration: %d\n" "$BENCHMARK_DURATION"
+		printf "threads: %d\n" "$DIRECTOR_THREADS"
+		printf "virtual_users: %d\n" "$VIRTUAL_USER"
+		printf "timeout: %d\n" "$TIMEOUT"
+		printf "warmup_duration: %d\n" "$WARMUP_DURATION"
+		printf "warmup_rps: %d\n" "$WARMUP_RPS"
+		printf "warmup_pause: %d\n" "$WARMUP_PAUSE"
+		printf "workload: %s\n" "$WORKLOAD_FILE"
+	} >>"$CONFIG_FILE"
 
 	printf "Starting Solr server on %s\n" "$SERVER_IP"
 	bash start_server.sh --ip="$SERVER_IP" --user="$USER" --cpus="$CPUS" --memory="$MEMORY"
-	printf "Waiting on Solr server."
+	printf "Waiting on Solr server.\n"
 	bash query.sh
 	YAML_PATH="$WORKLOAD_FILE" BENCHMARK_RUN="$RUN_DIR" PROFILE="$PROFILE" BENCHMARK_DURATION="$BENCHMARK_DURATION" DIRECTOR_THREADS="$DIRECTOR_THREADS" VIRTUAL_USERS="$VIRTUAL_USER" TIMEOUT="$TIMEOUT" WARMUP_DURATION="$WARMUP_DURATION" WARMUP_RPS="$WARMUP_RPS" WARMUP_PAUSE="$WARMUP_PAUSE" docker compose up --build --abort-on-container-exit --force-recreate
 	ssh "$USER"@"$SERVER_IP" 'cd monitorless/applications/solr; PROMETHEUS_UID="$(id -u)" PROMETHEUS_GID="$(id -g)" HEAP_MEMORY='"$MEMORY"' CPUS='"$CPUS"'docker compose down; tar --no-xattrs czf metrics.tar.gz metrics/'
