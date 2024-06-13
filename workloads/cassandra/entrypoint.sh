@@ -1,19 +1,21 @@
 #!/bin/bash
 
+set -euo pipefail # abort on nonzero exit status, unbound variable and don't hide errors within pipes
+
 if [[ $DO_SEED -eq 1 ]]; then
 	./warmup.sh "$SERVER_IP" "$RECORD_COUNT" 4
 else
-	echo "+++++++++++++++++++"
-	echo "++ CONFIGURATION ++"
-	echo "+++++++++++++++++++"
+	printf "+++++++++++++++++++\n"
+	printf "++ CONFIGURATION ++\n"
+	printf "+++++++++++++++++++\n"
 
-	echo "Record Count: $RECORD_COUNT"
-	echo "Warmup Duration: $WARMUP_DURATION s"
-	echo "Warmup Rate: $WARMUP_RATE r/s"
-	echo "Minimum Requests per Second: $MINIMUM_RPS r/s"
-	echo "Maximum Requests per Second: $MAXIMUM_RPS r/s"
-	echo "Total Test Duration: $TEST_DURATION_SEC s"
-	echo "Constant Load Step Duration: $LOAD_STEP_DURATION s"
+	printf "Record Count: %d \n" "$RECORD_COUNT"
+	printf "Warmup Duration: %d s\n" "$WARMUP_DURATION"
+	printf "Warmup Rate: %d r/s\n" "$WARMUP_RATE"
+	printf "Minimum Requests per Second: %d r/s\n" "$MINIMUM_RPS"
+	printf "Maximum Requests per Second: %d r/s\n" "$MAXIMUM_RPS"
+	printf "Total benchmark duration: %d s\n" "$BENCHMARKDURATION"
+	printf "Constant load step duration: %d s\n" "$STEP_DURATION"
 
 	exit=0
 	while [ $exit -eq 0 ]; do
@@ -37,14 +39,16 @@ else
 		-threads 16 -target "$WARMUP_RATE" -s
 
 	echo "Warmup completed!"
+	sleep "$WARMUP_PAUSE"
 
-	NUMBER_OF_STEPS=$((TEST_DURATION_SEC / LOAD_STEP_DURATION))
+	NUMBER_OF_STEPS=$((BENCHMARK_DURATION / STEP_DURATION))
+	NUMBER_OF_STEPS=$((NUMBER_OF_STEPS - 1))
 	STEP_INCREMENT=$(((MAXIMUM_RPS - MINIMUM_RPS) / NUMBER_OF_STEPS))
 
 	for ((CURRENT_RPS = MINIMUM_RPS; CURRENT_RPS <= MAXIMUM_RPS; CURRENT_RPS += STEP_INCREMENT)); do
-		OP_COUNT=$((CURRENT_RPS * LOAD_STEP_DURATION))
+		OP_COUNT=$((CURRENT_RPS * STEP_DURATION))
 		/ycsb/bin/ycsb.sh run cassandra-cql -p hosts="$SERVER_IP" -P /ycsb/workloads/"$WORKLOAD" \
 			-p recordcount="$RECORD_COUNT" -p operationcount="$OP_COUNT" -p status.interval=1 \
-			-threads 16 -target "$CURRENT_RPS" -s -p maxexecutiontime="$LOAD_STEP_DURATION"
+			-threads 16 -target "$CURRENT_RPS" -s -p maxexecutiontime="$STEP_DURATION"
 	done
 fi

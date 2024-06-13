@@ -4,15 +4,16 @@ services:
     network_mode: host
     volumes:
       - ${PWD}/entrypoint.sh:/entrypoint.sh
-    entrypoint: ["/entrypoint.sh"]
+    entrypoint: ["/bin/bash", "/entrypoint.sh"]
     environment:
       - DO_SEED=$DO_SEED
       - SERVER_IP=$SERVER_IP
       - RECORD_COUNT=$RECORD_COUNT
       - WARMUP_DURATION=$WARMUP_DURATION
-      - WARMUP_RATE=$WARMUP_RATE
+      - WARMUP_RPS=$WARMUP_RPS
+      - WARMUP_PAUSE=$WARMUP_PAUSE
       - MINIMUM_RPS=$MINIMUM_RPS
       - MAXIMUM_RPS=$MAXIMUM_RPS
-      - TEST_DURATION_SEC=$TEST_DURATION_SEC
-      - LOAD_STEP_DURATION=$LOAD_STEP_DURATION
+      - BENCHMARK_DURATION=$BENCHMARK_DURATION
+      - STEP_DURATION=$STEP_DURATION
       - WORKLOAD=$WORKLOAD
