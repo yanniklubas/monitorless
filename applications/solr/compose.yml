@@ -4,11 +4,17 @@ services:
     # network_mode: host
     restart: always
     # Heap Memory, Number of Servers
-    command: 14g 1
+    command: ${HEAP_MEMORY?Heap memory unset} 1
+    environment:
+      - HEAP_MEMORY=$HEAP_MEMORY
     ports:
       - 8983:8983
     volumes_from:
       - container:web_search_dataset
+    deploy:
+      resources:
+        limits:
+          cpus: ${CPUS?CPUS unset}
   cadvisor:
     privileged: true
     image: gcr.io/cadvisor/cadvisor:v0.47.2
