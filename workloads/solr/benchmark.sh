@@ -168,7 +168,7 @@ fi
 	printf "Starting Solr server on %s\n" "$SERVER_IP"
 	bash start_server.sh --ip="$SERVER_IP" --user="$USER" --cpus="$CPUS" --memory="$MEMORY"
 	printf "Waiting on Solr server.\n"
-	bash query.sh
+	bash query.sh "$SERVER_IP"
 	YAML_PATH="$WORKLOAD_FILE" BENCHMARK_RUN="$RUN_DIR" PROFILE="$PROFILE" BENCHMARK_DURATION="$BENCHMARK_DURATION" DIRECTOR_THREADS="$DIRECTOR_THREADS" VIRTUAL_USERS="$VIRTUAL_USER" TIMEOUT="$TIMEOUT" WARMUP_DURATION="$WARMUP_DURATION" WARMUP_RPS="$WARMUP_RPS" WARMUP_PAUSE="$WARMUP_PAUSE" docker compose up --build --abort-on-container-exit --force-recreate
 	ssh "$USER"@"$SERVER_IP" 'cd monitorless/applications/solr; PROMETHEUS_UID="$(id -u)" PROMETHEUS_GID="$(id -g)" HEAP_MEMORY='"$MEMORY"' CPUS='"$CPUS"'docker compose down; tar --no-xattrs czf metrics.tar.gz metrics/'
 	scp "$USER"@"$SERVER_IP":monitorless/applications/solr/metrics.tar.gz "$RUN_DIR/metrics.tar.gz"
