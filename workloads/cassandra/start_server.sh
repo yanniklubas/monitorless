@@ -48,4 +48,4 @@ if [ -z "$MEMORY" ]; then
 	exit 1
 fi
 
-ssh "$USER"@"$SERVER_IP" 'cd monitorless/applications/cassandra; mkdir -p metrics; PROMETHEUS_UID="$(id -u)" PROMETHEUS_GID="$(id -g)" HEAP_MEMORY='"$MEMORY"' CPUS='"$CPUS"' docker compose up --build --detach --force-recreate --wait --quiet-pull 1>&2 2>/dev/null'
+ssh "$USER"@"$SERVER_IP" 'cd monitorless/applications/cassandra; mkdir -p metrics; PROMETHEUS_UID="$(id -u)" PROMETHEUS_GID="$(id -g)" HEAP_MEMORY='"$MEMORY"' CPUS='"$CPUS"' docker compose up --build --detach --force-recreate --wait --quiet-pull 2>/dev/null >&2'
