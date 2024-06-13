@@ -19,7 +19,8 @@ while kill -0 $(pgrep java); do
 	sleep 1
 done
 
-cd "$SOLR_CORE_DIR/cloudsuite_web_search*" || exit 1
+DIR_NAME=$(ls "$SOLR_CORE_DIR" | grep "cloudsuite_web_search" | head -1)
+cd "$SOLR_CORE_DIR/$DIR_NAME" || exit 1
 rm -rf data
 # Copy data from dataset to server
 ln -s /download/index_14GB/data data
