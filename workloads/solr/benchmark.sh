@@ -168,6 +168,6 @@ fi
 	printf "Waiting on Solr server."
 	bash query.sh
 	YAML_PATH="$WORKLOAD_FILE" BENCHMARK_RUN="$RUN_DIR" PROFILE="$PROFILE" BENCHMARK_DURATION="$BENCHMARK_DURATION" DIRECTOR_THREADS="$DIRECTOR_THREADS" VIRTUAL_USERS="$VIRTUAL_USER" TIMEOUT="$TIMEOUT" WARMUP_DURATION="$WARMUP_DURATION" WARMUP_RPS="$WARMUP_RPS" WARMUP_PAUSE="$WARMUP_PAUSE" docker compose up --build --abort-on-container-exit --force-recreate
-	ssh "$USER"@"$SERVER_IP" 'cd solr; tar --no-xattrs czf metrics.tar.gz metrics/'
-	scp "$USER"@"$SERVER_IP":solr/metrics.tar.gz "$RUN_DIR/metrics.tar.gz"
+	ssh "$USER"@"$SERVER_IP" 'cd monitorless/applications/solr; tar --no-xattrs czf metrics.tar.gz metrics/'
+	scp "$USER"@"$SERVER_IP":monitorless/applications/solr/metrics.tar.gz "$RUN_DIR/metrics.tar.gz"
 )
