@@ -24,7 +24,7 @@ fi
 
 # Tuple format CPU, Mem, Profile
 #        |++++ #1 +++++| |+++++ #2 +++++|
-for t in "3 14g sin1000.csv" "16 14g sin1000.csv"; do
+for t in "3 14g sin1000.csv" "8 14g sin1000.csv"; do
 	set -- $t
 	CPU="$1"
 	MEMORY="$2"

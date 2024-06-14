@@ -30,18 +30,18 @@ The following two instance types were used:
 |  #  | Service   | CPU, MEM | Par |     Traffic     |
 | :-: | :-------- | :------: | :-: | :-------------: |
 |  1  | Solr      |  3, 30   |  -  |     sin1000     |
-|  2  | Solr      |  16, 30  |  -  |     sin1000     |
-|  3  | Solr      |  16, 8   | 14  |  sinnoise1000   |
-|  4  | Solr      |  16, 8,  | 15  |  sinnoise1000   |
+|  2  | Solr      |  8, 30   |  -  |     sin1000     |
+|  3  | Solr      |   8, 8   | 14  |  sinnoise1000   |
+|  4  | Solr      |   8, 8   | 15  |  sinnoise1000   |
 |  5  | Solr      |   3, 8   | 16  |  sinnoise1000   |
 |  6  | Solr      |  1.5, 8  | 17  |  sinnoise1000   |
-|  7  | Memcached |  16, 30  |  -  |   2K-50K R/s    |
+|  7  | Memcached |  8, 30   |  -  |   2K-50K R/s    |
 |  8  | Memcached |  1, 30   |  -  |   20K-85K R/s   |
-|  9  | Memcached |  16, 8   |  -  |   39K-45K R/s   |
-| 10  | Memcached |  16, 4   | 18  |   10K-65K R/s   |
-| 11  | Cassandra |  16, 30  |  -  | A: 30K-100K R/s |
-| 12  | Cassandra |  16, 30  |  -  | B: 20K-70K R/s  |
-| 13  | Cassandra |  16, 30  |  -  | D: 40K-90K R/s  |
+|  9  | Memcached |   8, 8   |  -  |   39K-45K R/s   |
+| 10  | Memcached |   8, 4   | 18  |   10K-65K R/s   |
+| 11  | Cassandra |  8, 30   |  -  | A: 30K-100K R/s |
+| 12  | Cassandra |  8, 30   |  -  | B: 20K-70K R/s  |
+| 13  | Cassandra |  8, 30   |  -  | D: 40K-90K R/s  |
 | 14  | Cassandra |  6, 30   |  3  | A: 15K-25K R/s  |
 | 15  | Cassandra |  6, 30   |  4  | B: 10K-15K R/s  |
 | 16  | Cassandra |  6, 30   |  5  | D: 10K-25K R/s  |
