@@ -1,10 +1,11 @@
 services:
   cassandra:
     image: cloudsuite/data-serving:server
-    network_mode: host
     volumes:
       - cassandra-data:/var/lib/cassandra:rw
     command: "--heap-size=$HEAP_MEMORY --writer-count=128"
+    ports:
+      - 9042:9042
     deploy:
       resources:
         limits:
