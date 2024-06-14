@@ -3,7 +3,7 @@ services:
     image: cloudsuite/data-serving:server
     network_mode: host
     volumes:
-      - cassandra-data:/var/lib/cassndra:rw
+      - cassandra-data:/var/lib/cassandra:rw
     command: "--heap-size=$HEAP_MEMORY --writer-count=128"
     deploy:
       resources:
