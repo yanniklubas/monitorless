@@ -113,9 +113,9 @@ fi
 	cd "${SCRIPT_PATH}"
 	if [ "$DO_SEED" -eq 1 ]; then
 		printf "Starting seeding the database with %s\n" "$WORKLOAD"
-		ssh "$USER"@"$SERVER_IP" 'cd monitorless/applications/cassandra; PROMETHEUS_UID="$(id -u)" PROMETHEUS_GID="$(id -g)" CPUS='"$CPUS"' HEAP_MEMORY='"$MEMORY"' docker compose up --build --detach --force-recreate --wait --quiet-pull &> /dev/null'
+		ssh "$USER"@"$SERVER_IP" 'cd monitorless/applications/cassandra; PROMETHEUS_UID="$(id -u)" PROMETHEUS_GID="$(id -g)" CPUS='"$CPUS"' HEAP_MEMORY='"$MEMORY"' docker compose up --build --detach --force-recreate --wait --quiet-pull cassandra 2>/dev/null >&2'
 		DO_SEED="$DO_SEED" WORKLOAD="$WORKLOAD" SERVER_IP="$SERVER_IP" RECORD_COUNT="$RECORD_COUNT" docker compose up --force-recreate --build
-		ssh "$USER"@"$SERVER_IP" 'cd monitorless/applications/cassandra; PROMETHEUS_UID="$(id -u)" PROMETHEUS_GID="$(id -g)" HEAP_MEMORY='"$MEMORY"' docker compose down'
+		ssh "$USER"@"$SERVER_IP" 'cd monitorless/applications/cassandra; PROMETHEUS_UID="$(id -u)" PROMETHEUS_GID="$(id -g)" CPUS='"$CPUS"' HEAP_MEMORY='"$MEMORY"' docker compose down'
 	fi
 
 	if [ -z "$BENCHMARK_DURATION" ]; then
@@ -163,16 +163,18 @@ fi
 	printf "Saving benchmark configuration to %s\n" "$CONFIG_FILE" 1>&2
 	touch "$CONFIG_FILE"
 	printf "workload: %s\n" "$WORKLOAD" >"$CONFIG_FILE"
-	printf "cpus: %d\n" "$CPUS" >"$CONFIG_FILE"
-	printf "memory: %s\n" "$MEMORY" >"$CONFIG_FILE"
-	printf "server_ip: %s\n" "$SERVER_IP" >"$CONFIG_FILE"
-	printf "duration: %d\n" "$BENCHMARK_DURATION" >"$CONFIG_FILE"
-	printf "warmup_duration: %d\n" "$WARMUP_DURATION" >"$CONFIG_FILE"
-	printf "warmup_rps: %d\n" "$WARMUP_RPS" >"$CONFIG_FILE"
-	printf "warmup_pause: %d\n" "$WARMUP_PAUSE" >"$CONFIG_FILE"
-	printf "minimum_rps: %d\n" "$MINIMUM_RPS" >"$CONFIG_FILE"
-	printf "maximum_rps: %d\n" "$MAXIMUM_RPS" >"$CONFIG_FILE"
-	printf "step_duration: %d\n" "$STEP_DURATION" >"$CONFIG_FILE"
+	{
+		printf "cpus: %d\n" "$CPUS"
+		printf "memory: %s\n" "$MEMORY"
+		printf "server_ip: %s\n" "$SERVER_IP"
+		printf "duration: %d\n" "$BENCHMARK_DURATION"
+		printf "warmup_duration: %d\n" "$WARMUP_DURATION"
+		printf "warmup_rps: %d\n" "$WARMUP_RPS"
+		printf "warmup_pause: %d\n" "$WARMUP_PAUSE"
+		printf "minimum_rps: %d\n" "$MINIMUM_RPS"
+		printf "maximum_rps: %d\n" "$MAXIMUM_RPS"
+		printf "step_duration: %d\n" "$STEP_DURATION"
+	} >>"$CONFIG_FILE"
 
 	printf "Starting Cassandra server on %s\n" "$SERVER_IP"
 	bash start_server.sh --ip="$SERVER_IP" --user="$USER" --cpus="$CPUS" --memory="$MEMORY"
@@ -181,6 +183,6 @@ fi
 	sleep "$WAIT"
 	DO_SEED=0 SERVER_IP="$SERVER_IP" RECORD_COUNT="$RECORD_COUNT" WARMUP_DURATION="$WARMUP_DURATION" WARMUP_RPS="$WARMUP_RPS" WARMUP_PAUSE="$WARMUP_PAUSE" MINIMUM_RPS="$MINIMUM_RPS" MAXIMUM_RPS="$MAXIMUM_RPS" BENCHMARK_DURATION="$BENCHMARK_DURATION" STEP_DURATION="$STEP_DURATION" WORKLOAD="$WORKLOAD" docker compose up --force-recreate --build
 	docker compose logs --no-log-prefix cassandra-client >"$RUN_DIR/summary.log"
-	ssh "$USER"@"$SERVER_IP" 'cd monitorless/applications/cassandra; PROMETHEUS_UID="$(id -u)" PROMETHEUS_GID="$(id -g)" HEAP_MEMORY='"$MEMORY"' docker compose down; tar --no-xattrs -czf metrics.tar.gz metrics/'
+	ssh "$USER"@"$SERVER_IP" 'cd monitorless/applications/cassandra; PROMETHEUS_UID="$(id -u)" PROMETHEUS_GID="$(id -g)" CPUS='"$CPUS"' HEAP_MEMORY='"$MEMORY"' docker compose down; tar --no-xattrs -czf metrics.tar.gz metrics/'
 	scp "$USER"@"$SERVER_IP":monitorless/applications/cassandra/metrics.tar.gz "$RUN_DIR/metrics.tar.gz"
 )
