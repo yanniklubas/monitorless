@@ -11,10 +11,10 @@ else
 
 	printf "Record Count: %d \n" "$RECORD_COUNT"
 	printf "Warmup Duration: %d s\n" "$WARMUP_DURATION"
-	printf "Warmup Rate: %d r/s\n" "$WARMUP_RATE"
+	printf "Warmup Rate: %d r/s\n" "$WARMUP_RPS"
 	printf "Minimum Requests per Second: %d r/s\n" "$MINIMUM_RPS"
 	printf "Maximum Requests per Second: %d r/s\n" "$MAXIMUM_RPS"
-	printf "Total benchmark duration: %d s\n" "$BENCHMARKDURATION"
+	printf "Total benchmark duration: %d s\n" "$BENCHMARK_DURATION"
 	printf "Constant load step duration: %d s\n" "$STEP_DURATION"
 
 	exit=0
@@ -33,10 +33,10 @@ else
 	done
 
 	echo "Warming up the JIT cache!"
-	WARMUP_OP_COUNT=$((WARMUP_DURATION * WARMUP_RATE))
+	WARMUP_OP_COUNT=$((WARMUP_DURATION * WARMUP_RPS))
 	/ycsb/bin/ycsb.sh run cassandra-cql -p hosts="$SERVER_IP" -P /ycsb/workloads/workloada \
 		-p recordcount="$RECORD_COUNT" -p operationcount="$WARMUP_OP_COUNT" \
-		-threads 16 -target "$WARMUP_RATE" -s
+		-threads 16 -target "$WARMUP_RPS" -s
 
 	echo "Warmup completed!"
 	sleep "$WARMUP_PAUSE"
