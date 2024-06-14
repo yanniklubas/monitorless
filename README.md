@@ -47,3 +47,5 @@ The following two instance types were used:
 | 16  | Cassandra |  6, 30   |  5  | D: 10K-25K R/s  |
 | 17  | Cassandra |  6, 30   |  6  |  B: 5K-20K R/s  |
 | 18  | Cassandra |  6, 30   | 10  |   B: 10K R/s    |
+| 19  | Cassandra |  1, 30   |  -  |   F: 200 R/s    |
+| 20  | Cassandra |  1, 30   |  -  |    F: 20 R/s    |

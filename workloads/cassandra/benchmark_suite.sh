@@ -10,8 +10,9 @@ WARMUP_RPS=100
 WARMUP_PAUSE_SEC=10
 
 # Tuple format cpu, memory, workload, min-rps, max-rps
-#        |+++++++++++ #11 ++++++++++++| |+++++++++++ #12 +++++++++++| |+++++++++++ #13 +++++++++++|
-for t in "16 30 workloada 30000 100000" "16 30 workloadb 20000 70000" "16 30 workloadd 40000 90000"; do
+# Workload ordering based on https://github.com/brianfrankcooper/YCSB/wiki/Core-Workloads#running-the-workloads
+#        |+++++++++++ #11 ++++++++++++| |+++++++++++ #12 +++++++++++| |++++++++ #19 +++++++++| |+++++++ #20 ++++++++| |+++++++++++ #13 +++++++++++|
+for t in "16 30 workloada 30000 100000" "16 30 workloadb 20000 70000" "1 30 workloadf 200 200" "1 30 workloadf 20 20" "16 30 workloadd 40000 90000"; do
 	set -- $t
 	CPU="$1"
 	MEMORY="$2"
