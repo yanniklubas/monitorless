@@ -39,13 +39,13 @@ The following two instance types were used:
 |  8  | Memcached |  1, 30   |  -  |   20K-85K R/s   |
 |  9  | Memcached |   8, 8   |  -  |   39K-45K R/s   |
 | 10  | Memcached |   8, 4   | 18  |   10K-65K R/s   |
-| 11  | Cassandra |  8, 30   |  -  | A: 30K-100K R/s |
-| 12  | Cassandra |  8, 30   |  -  | B: 20K-70K R/s  |
-| 13  | Cassandra |  8, 30   |  -  | D: 40K-90K R/s  |
-| 14  | Cassandra |  6, 30   |  3  | A: 15K-25K R/s  |
-| 15  | Cassandra |  6, 30   |  4  | B: 10K-15K R/s  |
-| 16  | Cassandra |  6, 30   |  5  | D: 10K-25K R/s  |
-| 17  | Cassandra |  6, 30   |  6  |  B: 5K-20K R/s  |
-| 18  | Cassandra |  6, 30   | 10  |   B: 10K R/s    |
-| 19  | Cassandra |  1, 30   |  -  |   F: 200 R/s    |
-| 20  | Cassandra |  1, 30   |  -  |    F: 20 R/s    |
+| 11  | Cassandra |  8, 28   |  -  | A: 30K-100K R/s |
+| 12  | Cassandra |  8, 28   |  -  | B: 20K-70K R/s  |
+| 13  | Cassandra |  8, 28   |  -  | D: 40K-90K R/s  |
+| 14  | Cassandra |  6, 28   |  3  | A: 15K-25K R/s  |
+| 15  | Cassandra |  6, 28   |  4  | B: 10K-15K R/s  |
+| 16  | Cassandra |  6, 28   |  5  | D: 10K-25K R/s  |
+| 17  | Cassandra |  6, 28   |  6  |  B: 5K-20K R/s  |
+| 18  | Cassandra |  6, 28   | 10  |   B: 10K R/s    |
+| 19  | Cassandra |  1, 28   |  -  |   F: 200 R/s    |
+| 20  | Cassandra |  1, 28   |  -  |    F: 20 R/s    |
