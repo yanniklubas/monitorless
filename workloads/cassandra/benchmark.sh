@@ -149,7 +149,7 @@ fi
 
 	MEASUREMENTS_DIR="$HOME/measurements/cassandra"
 	mkdir -p "$MEASUREMENTS_DIR"
-	DIR_NAME="cpu-$CPUS-memory-$MEMORY-duration-$BENCHMARK_DURATION"
+	DIR_NAME="cpu-$CPUS-memory-$MEMORY-duration-$BENCHMARK_DURATION-$WORKLOAD"
 	RUN_DIR="$MEASUREMENTS_DIR/$DIR_NAME"
 
 	if [ -d "$RUN_DIR" ]; then
