@@ -130,7 +130,13 @@ fi
 		STEP_DURATION="$STEP_DURATION" \
 		docker compose up \
 		--force-recreate --build
-	docker compose logs --no-log-prefix memcached-client >"$RUN_DIR/summary.log"
+	SERVERS_FILE="$SERVERS_FILE" \
+		SERVER_MEMORY="$MEMORY" \
+		MINIMUM_RPS="$MINIMUM_RPS" \
+		MAXIMUM_RPS="$MAXIMUM_RPS" \
+		BENCHMARK_DURATION="$BENCHMARK_DURATION" \
+		STEP_DURATION="$STEP_DURATION" \
+		docker compose logs --no-log-prefix memcached-client >"$RUN_DIR/summary.log"
 	ssh "$USER"@"$SERVER_IP" '
 cd $HOME/monitorless/applications/memcached
 docker compose down
