@@ -52,6 +52,6 @@ docker run \
 -v /tmp:/backup \
 -v '"$VOLUME_NAME"':/data \
 busybox \
-tar --no-xattrs -czf /data /backup/metrics.tar.gz
+tar -czf /backup/metrics.tar.gz /data/
 rm $HOME/monitorless/applications/memcached/.env'
 scp "$USER"@"$SERVER_IP":/tmp/metrics.tar.gz "$RUN_DIR/metrics.tar.gz"
