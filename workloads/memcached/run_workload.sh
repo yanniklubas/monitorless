@@ -102,6 +102,7 @@ fi
 		mv "$RUN_DIR" "$BACKUP"
 	fi
 	mkdir -p "$RUN_DIR"
+
 	CONFIG_FILE="$RUN_DIR/config.yml"
 	printf "Saving benchmark configuration to %s\n" "$CONFIG_FILE" 1>&2
 	touch "$CONFIG_FILE"
@@ -116,9 +117,14 @@ fi
 	} >>"$CONFIG_FILE"
 
 	printf "Starting Memcached server on %s\n" "$SERVER_IP"
-	bash remote_docker.sh --ip="$SERVER_IP" --user="$USER" --cpus="$CPUS" --memory="$MEMORY" --cmd="up"
+	bash remote_docker.sh \
+		--ip="$SERVER_IP" \
+		--user="$USER" \
+		--cpus="$CPUS" \
+		--memory="$MEMORY" \
+		--cmd="up"
 	WAIT=10
-	printf "Waiting for %d seconds on server server.\n" "$WAIT"
+	printf "Waiting for %d seconds on server.\n" "$WAIT"
 	sleep "$WAIT"
 	SERVERS_FILE="$PWD/tmp_servers.txt"
 	printf "%s, %d\n" "$SERVER_IP" "$PORT" >"$SERVERS_FILE"
