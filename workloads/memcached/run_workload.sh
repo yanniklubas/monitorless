@@ -116,7 +116,7 @@ fi
 	} >>"$CONFIG_FILE"
 
 	printf "Starting Memcached server on %s\n" "$SERVER_IP"
-	bash start_server.sh --ip="$SERVER_IP" --user="$USER" --cpus="$CPUS" --memory="$MEMORY"
+	bash remote_docker.sh --ip="$SERVER_IP" --user="$USER" --cpus="$CPUS" --memory="$MEMORY" --cmd="up"
 	WAIT=10
 	printf "Waiting for %d seconds on server server.\n" "$WAIT"
 	sleep "$WAIT"
@@ -130,6 +130,7 @@ fi
 		STEP_DURATION="$STEP_DURATION" \
 		docker compose up \
 		--force-recreate --build
+
 	SERVERS_FILE="$SERVERS_FILE" \
 		SERVER_MEMORY="$MEMORY" \
 		MINIMUM_RPS="$MINIMUM_RPS" \
@@ -137,9 +138,7 @@ fi
 		BENCHMARK_DURATION="$BENCHMARK_DURATION" \
 		STEP_DURATION="$STEP_DURATION" \
 		docker compose logs --no-log-prefix memcached-client >"$RUN_DIR/summary.log"
-	ssh "$USER"@"$SERVER_IP" '
-cd $HOME/monitorless/applications/memcached
-docker compose down
-'
+
+	bash remote_docker.sh --ip="$SERVER_IP" --user="$USER" --cpus="$CPUS" --memory="$MEMORY" --cmd="down"
 	rm "$SERVERS_FILE"
 )
