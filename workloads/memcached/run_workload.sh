@@ -139,6 +139,10 @@ fi
 		STEP_DURATION="$STEP_DURATION" \
 		docker compose logs --no-log-prefix memcached-client >"$RUN_DIR/summary.log"
 
-	bash remote_docker.sh --ip="$SERVER_IP" --user="$USER" --cpus="$CPUS" --memory="$MEMORY" --cmd="down"
+	bash remote_docker.sh --ip="$SERVER_IP" \
+		--user="$USER" \
+		--cpus="$CPUS" \
+		--memory="$MEMORY" \
+		--cmd="down"
 	rm "$SERVERS_FILE"
 )
