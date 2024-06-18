@@ -2,25 +2,46 @@
 
 SERVER_IP="10.128.0.4"
 RECORD_COUNT=10000000
-SEED="--seed"
+# Tuple format cpu, memory, workload, min-rps, max-rps
+# Workload ordering based on https://github.com/brianfrankcooper/YCSB/wiki/Core-Workloads#running-the-workloads
+#           |++++++++++ #11 ++++++++++++| |++++++++++ #12 +++++++++++| |++++++++ #19 +++++++++| |+++++++ #20 ++++++++| |++++++++++ #13 +++++++++++|
+BENCHMARKS=("8 28 workloada 30000 100000" "8 28 workloadb 20000 70000" "1 28 workloadf 200 200" "1 28 workloadf 20 20" "8 28 workloadd 40000 90000")
 DURATION_SEC=600
 STEP_DURATION_SEC=30
 WARMUP_DURATION_SEC=120
 WARMUP_RPS=100
 WARMUP_PAUSE_SEC=10
 
-# Tuple format cpu, memory, workload, min-rps, max-rps
-# Workload ordering based on https://github.com/brianfrankcooper/YCSB/wiki/Core-Workloads#running-the-workloads
-#        |++++++++++ #11 ++++++++++++| |++++++++++ #12 +++++++++++| |++++++++ #19 +++++++++| |+++++++ #20 ++++++++| |++++++++++ #13 +++++++++++|
-for t in "8 28 workloada 30000 100000" "8 28 workloadb 20000 70000" "1 28 workloadf 200 200" "1 28 workloadf 20 20" "8 28 workloadd 40000 90000"; do
-	set -- $t
-	CPU="$1"
-	MEMORY="$2"
-	WORKLOAD="$3"
-	MIN_RPS="$4"
-	MAX_RPS="$5"
+#+++++++++++++++++++++++++++
+#++++ CONFIGURATION END ++++
+#+++++++++++++++++++++++++++
 
-	bash benchmark.sh \
+START_TIME=$(date +%s)
+SEED="--seed"
+MEASURMENTS_DIR="$HOME/measurements/cassandra/benchmark-$START_TIME"
+mkdir -p "$MEASURMENTS_DIR"
+VOLUME_NAME="prometheus-data-$START_TIME"
+
+# Create docker volume if it does not exist"
+ssh "$USER"@"$SERVER_IP" '
+docker volume create '"$VOLUME_NAME"' >/dev/null
+cd $HOME/monitorless/applications/cassandra
+echo MG_PROMETHEUS_VOLUME_NAME='"$VOLUME_NAME"' > .env
+'
+
+for t in "${BENCHMARKS[@]}"; do
+	oIFS="$IFS"
+	IFS=' '
+	read -ra RUN <<<"$t"
+	IFS="$oIFS"
+	unset oIFS
+	CPU="${RUN[0]}"
+	MEMORY="${RUN[1]}"
+	WORKLOAD="${RUN[2]}"
+	MIN_RPS="${RUN[3]}"
+	MAX_RPS="${RUN[4]}"
+
+	bash run_workload.sh \
 		--workload="$WORKLOAD" \
 		--records="$RECORD_COUNT" \
 		"$SEED" \
@@ -33,7 +54,18 @@ for t in "8 28 workloada 30000 100000" "8 28 workloadb 20000 70000" "1 28 worklo
 		--step="$STEP_DURATION_SEC" \
 		--wp-duration="$WARMUP_DURATION_SEC" \
 		--wp-rps="$WARMUP_RPS" \
-		--wp-pause="$WARMUP_PAUSE_SEC"
+		--wp-pause="$WARMUP_PAUSE_SEC" \
+		--measurements="$MEASURMENTS_DIR"
 	# Only seed on first iteration
 	SEED=""
 done
+
+ssh "$USER"@"$SERVER_IP" 'rm /tmp/metrics.tar.gz 2>/dev/null
+docker run \
+	--rm \
+	-v /tmp:/backup \
+	-v '"$VOLUME_NAME"':/data \
+	busybox \
+	tar --no-xattrs -czf /data /backup/metrics.tar.gz
+rm $HOME/monitorless/applications/cassandra/.env'
+scp "$USER"@"$SERVER_IP":/tmp/metrics.tar.gz "$RUN_DIR/metrics.tar.gz"
