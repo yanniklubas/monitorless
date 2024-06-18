@@ -42,7 +42,7 @@ for opt in "$@"; do
 		STEP_DURATION="${opt#*=}"
 		shift
 		;;
-	--measurments=*)
+	--measurements=*)
 		MEASUREMENTS_DIR="${opt#*=}"
 		shift
 		;;
