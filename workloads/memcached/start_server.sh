@@ -49,11 +49,8 @@ if [ -z "$MEMORY" ]; then
 fi
 
 ssh "$USER"@"$SERVER_IP" '
-cd monitorless/applications/memcached
-mkdir -p metrics
-PROMETHEUS_UID="$(id -u)" \
-PROMETHEUS_GID="$(id -g)" \
-HEAP_MEMORY='"$MEMORY"' \
+cd $HOME/monitorless/applications/memcached
+SERVER_MEMORY='"$MEMORY"' \
 CPUS='"$CPUS"' \
 docker compose up --build --detach \
 --force-recreate --wait --quiet-pull \
