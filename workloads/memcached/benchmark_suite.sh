@@ -13,7 +13,7 @@ BENCHMARKS=("8 30720 2000 50000" "1 30720 20000 85000" "8 8192 39000 45000")
 #+++++++++++++++++++++++++++
 
 START_TIME=$(date +%s)
-MEASURMENTS_DIR="$HOME/measurments/memcached/benchmark-$START_TIME"
+MEASURMENTS_DIR="$HOME/measurements/memcached/benchmark-$START_TIME"
 mkdir -p "$MEASURMENTS_DIR"
 VOLUME_NAME="prometheus-data-$START_TIME"
 
