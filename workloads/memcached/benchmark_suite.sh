@@ -30,10 +30,10 @@ for t in "${BENCHMARKS[@]}"; do
 	read -ra RUN <<<"$t"
 	IFS="$oIFS"
 	unset oIFS
-	CPU="${RUN[1]}"
-	MEMORY="${RUN[2]}"
-	MIN_RPS="${RUN[3]}"
-	MAX_RPS="${RUN[4]}"
+	CPU="${RUN[0]}"
+	MEMORY="${RUN[1]}"
+	MIN_RPS="${RUN[2]}"
+	MAX_RPS="${RUN[3]}"
 
 	bash benchmark.sh \
 		--cpus="$CPU" \
