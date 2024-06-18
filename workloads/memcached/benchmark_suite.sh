@@ -35,7 +35,7 @@ for t in "${BENCHMARKS[@]}"; do
 	MIN_RPS="${RUN[2]}"
 	MAX_RPS="${RUN[3]}"
 
-	bash benchmark.sh \
+	bash run_workload.sh \
 		--cpus="$CPU" \
 		--memory="$MEMORY" \
 		--ip="$SERVER_IP" \
