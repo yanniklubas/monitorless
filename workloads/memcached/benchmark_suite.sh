@@ -25,7 +25,11 @@ echo MG_PROMETHEUS_VOLUME_NAME='"$VOLUME_NAME"' > .env
 '
 
 for t in "${BENCHMARKS[@]}"; do
-	RUN=("$t")
+	oIFS="$IFS"
+	IFS=' '
+	read -ra RUN <<<"$t"
+	IFS="$oIFS"
+	unset oIFS
 	CPU="${RUN[1]}"
 	MEMORY="${RUN[2]}"
 	MIN_RPS="${RUN[3]}"
