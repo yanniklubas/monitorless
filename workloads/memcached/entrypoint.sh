@@ -10,7 +10,7 @@ echo "Maximum Requests per Second: $MAXIMUM_RPS r/s"
 echo "Benchmark Duration: $BENCHMARK_DURATION s"
 echo "Step Duration: $STEP_DURATION s"
 
-/entrypoint.sh --m="S&W" --S=28 -- D="$SERVER_MEMORY" --w=4
+/entrypoint.sh --m="S&W" --S=28 --D="$SERVER_MEMORY" --w=4
 
 for i in {5..1}; do
 	echo "Starting load step in $i seconds..."
