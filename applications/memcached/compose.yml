@@ -6,6 +6,10 @@ services:
       - SERVER_MEMORY=$SERVER_MEMORY
     ports:
       - 11211:11211
+    deploy:
+      resources:
+        limits:
+          cpus: $CPUS
   cadvisor:
     privileged: true
     image: gcr.io/cadvisor/cadvisor:v0.47.2
