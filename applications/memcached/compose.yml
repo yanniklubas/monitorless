@@ -2,9 +2,10 @@ services:
   memcached:
     image: cloudsuite/data-caching:server
     command: -t 4 -m $SERVER_MEMORY -n 550
-    network_mode: host
     environment:
       - SERVER_MEMORY=$SERVER_MEMORY
+    ports:
+      - 11211:11211
   cadvisor:
     privileged: true
     image: gcr.io/cadvisor/cadvisor:v0.47.2
@@ -28,7 +29,10 @@ services:
       - 9090:9090
     volumes:
       - $PWD/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - $PWD/metrics:/prometheus:rw
+      - prometheus:/prometheus:rw
     depends_on:
       - cadvisor
-    user: ${PROMETHEUS_UID?PROMETHEUS_UID unset}:${PROMETHEUS_GID?PROMETHEUS_GID unset}
+volumes:
+  prometheus:
+    external: true
+    name: ${MG_PROMETHEUS_VOLUME_NAME}
