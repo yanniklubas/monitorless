@@ -19,7 +19,7 @@ VOLUME_NAME="prometheus-data-$START_TIME"
 
 # Create docker volume if it does not exist"
 ssh "$USER"@"$SERVER_IP" '
-docker volume create '"$VOLUME_NAME"'
+docker volume create '"$VOLUME_NAME" >/dev/null'
 cd monitorless/applications/memcached
 echo MG_PROMETHEUS_VOLUME_NAME='"$VOLUME_NAME"' > .env
 '
