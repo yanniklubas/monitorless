@@ -1,1 +1,0 @@
-SERVER_IP, PORT(Default: 11211)
