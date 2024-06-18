@@ -42,7 +42,8 @@ for t in "${BENCHMARKS[@]}"; do
 		--duration="$DURATION_SEC" \
 		--min-rps="$MIN_RPS" \
 		--max-rps="$MAX_RPS" \
-		--step="$STEP_DURATION_SEC"
+		--step="$STEP_DURATION_SEC" \
+		--measurements="$MEASURMENTS_DIR"
 
 done
 ssh "$USER"@"$SERVER_IP" 'rm /tmp/metrics.tar.gz 2>/dev/null
