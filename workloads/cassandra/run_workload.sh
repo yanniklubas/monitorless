@@ -12,6 +12,7 @@ CPUS=""
 MEMORY=""
 SERVER_IP=""
 DO_SEED=0
+MEASUREMENTS_DIR=""
 
 # +++++++++++++++++++++++++++++
 # ++ BENCHMARK CONFIGURATION ++
@@ -78,6 +79,10 @@ for opt in "$@"; do
 		WARMUP_PAUSE="${opt#*=}"
 		shift
 		;;
+	--measurements=*)
+		MEASUREMENTS_DIR="${opt#*=}"
+		shift
+		;;
 	-*)
 		printf "Unknown option: %s\n" "$opt" 1>&2
 		exit 1
@@ -105,6 +110,38 @@ if [ -z "$CPUS" ]; then
 	printf "invalid arguments: cpus must be set using --cpus=<cpus>\n" 1>&2
 	exit 1
 fi
+if [ -z "$MEASUREMENTS_DIR" ]; then
+	printf "invalid arguments: measurements directory must be set using --measurements=<path>\n" 1>&2
+	exit 1
+fi
+if [ -z "$BENCHMARK_DURATION" ]; then
+	printf "invalid arguments: benchmark duration must be set using --duration=<duration>\n" 1>&2
+	exit 1
+fi
+if [ -z "$MINIMUM_RPS" ]; then
+	printf "invalid arguments: minimum rps must be set using --min-rps=<rps>\n" 1>&2
+	exit 1
+fi
+if [ -z "$MAXIMUM_RPS" ]; then
+	printf "invalid arguments: maximum rps must be set using --max-rps=<rps>\n" 1>&2
+	exit 1
+fi
+if [ -z "$STEP_DURATION" ]; then
+	printf "invalid arguments: step duration must be set using --step=<duration>\n" 1>&2
+	exit 1
+fi
+if [ -z "$WARMUP_DURATION" ]; then
+	printf "invalid arguments: warmup duration must be set using --wp-duration=<duration>\n" 1>&2
+	exit 1
+fi
+if [ -z "$WARMUP_RPS" ]; then
+	printf "invalid arguments: warmup rps must be set using --wp-rps=<rps>\n" 1>&2
+	exit 1
+fi
+if [ -z "$WARMUP_PAUSE" ]; then
+	printf "invalid arguments: warmup pause must be set using --wp-pause=<pause>\n" 1>&2
+	exit 1
+fi
 
 # +++++++++++++++++++
 (
@@ -113,42 +150,28 @@ fi
 	cd "${SCRIPT_PATH}"
 	if [ "$DO_SEED" -eq 1 ]; then
 		printf "Starting seeding the database with %s\n" "$WORKLOAD"
-		ssh "$USER"@"$SERVER_IP" 'cd monitorless/applications/cassandra; PROMETHEUS_UID="$(id -u)" PROMETHEUS_GID="$(id -g)" CPUS='"$CPUS"' HEAP_MEMORY='"$MEMORY"' docker compose up --build --detach --force-recreate --wait --quiet-pull cassandra 2>/dev/null >&2'
-		DO_SEED="$DO_SEED" WORKLOAD="$WORKLOAD" SERVER_IP="$SERVER_IP" RECORD_COUNT="$RECORD_COUNT" docker compose up --force-recreate --build
-		ssh "$USER"@"$SERVER_IP" 'cd monitorless/applications/cassandra; PROMETHEUS_UID="$(id -u)" PROMETHEUS_GID="$(id -g)" CPUS='"$CPUS"' HEAP_MEMORY='"$MEMORY"' docker compose down'
+		bash remote_docker.sh \
+			--ip="$SERVER_IP" \
+			--user="$USER" \
+			--cpus="$CPUS" \
+			--memory="$MEMORY" \
+			--cmd="up" \
+			--services="cassandra"
+
+		DO_SEED="$DO_SEED" \
+			WORKLOAD="$WORKLOAD" \
+			SERVER_IP="$SERVER_IP" \
+			RECORD_COUNT="$RECORD_COUNT" \
+			docker compose up --force-recreate --build
+
+		bash remote_docker.sh \
+			--ip="$SERVER_IP" \
+			--user="$USER" \
+			--cpus="$CPUS" \
+			--memory="$MEMORY" \
+			--cmd="down"
 	fi
 
-	if [ -z "$BENCHMARK_DURATION" ]; then
-		printf "invalid arguments: benchmark duration must be set using --duration=<duration>\n" 1>&2
-		exit 1
-	fi
-	if [ -z "$MINIMUM_RPS" ]; then
-		printf "invalid arguments: minimum rps must be set using --min-rps=<rps>\n" 1>&2
-		exit 1
-	fi
-	if [ -z "$MAXIMUM_RPS" ]; then
-		printf "invalid arguments: maximum rps must be set using --max-rps=<rps>\n" 1>&2
-		exit 1
-	fi
-	if [ -z "$STEP_DURATION" ]; then
-		printf "invalid arguments: step duration must be set using --step=<duration>\n" 1>&2
-		exit 1
-	fi
-	if [ -z "$WARMUP_DURATION" ]; then
-		printf "invalid arguments: warmup duration must be set using --wp-duration=<duration>\n" 1>&2
-		exit 1
-	fi
-	if [ -z "$WARMUP_RPS" ]; then
-		printf "invalid arguments: warmup rps must be set using --wp-rps=<rps>\n" 1>&2
-		exit 1
-	fi
-	if [ -z "$WARMUP_PAUSE" ]; then
-		printf "invalid arguments: warmup pause must be set using --wp-pause=<pause>\n" 1>&2
-		exit 1
-	fi
-
-	MEASUREMENTS_DIR="$HOME/measurements/cassandra"
-	mkdir -p "$MEASUREMENTS_DIR"
 	DIR_NAME="cpu-$CPUS-memory-$MEMORY-duration-$BENCHMARK_DURATION-$WORKLOAD"
 	RUN_DIR="$MEASUREMENTS_DIR/$DIR_NAME"
 
@@ -159,6 +182,7 @@ fi
 		mv "$RUN_DIR" "$BACKUP"
 	fi
 	mkdir -p "$RUN_DIR"
+
 	CONFIG_FILE="$RUN_DIR/config.yml"
 	printf "Saving benchmark configuration to %s\n" "$CONFIG_FILE" 1>&2
 	touch "$CONFIG_FILE"
@@ -177,12 +201,48 @@ fi
 	} >>"$CONFIG_FILE"
 
 	printf "Starting Cassandra server on %s\n" "$SERVER_IP"
-	bash start_server.sh --ip="$SERVER_IP" --user="$USER" --cpus="$CPUS" --memory="$MEMORY"
+	bash remote_docker.sh \
+		--ip="$SERVER_IP" \
+		--user="$USER" \
+		--cpus="$CPUS" \
+		--memory="$MEMORY" \
+		--cmd="up"
+
 	WAIT=10
 	printf "Waiting for %d seconds on server server.\n" "$WAIT"
 	sleep "$WAIT"
-	DO_SEED=0 SERVER_IP="$SERVER_IP" RECORD_COUNT="$RECORD_COUNT" WARMUP_DURATION="$WARMUP_DURATION" WARMUP_RPS="$WARMUP_RPS" WARMUP_PAUSE="$WARMUP_PAUSE" MINIMUM_RPS="$MINIMUM_RPS" MAXIMUM_RPS="$MAXIMUM_RPS" BENCHMARK_DURATION="$BENCHMARK_DURATION" STEP_DURATION="$STEP_DURATION" WORKLOAD="$WORKLOAD" docker compose up --force-recreate --build
-	docker compose logs --no-log-prefix cassandra-client >"$RUN_DIR/summary.log"
-	ssh "$USER"@"$SERVER_IP" 'cd monitorless/applications/cassandra; PROMETHEUS_UID="$(id -u)" PROMETHEUS_GID="$(id -g)" CPUS='"$CPUS"' HEAP_MEMORY='"$MEMORY"' docker compose down; tar --no-xattrs -czf metrics.tar.gz metrics/; rm -rf metrics'
-	scp "$USER"@"$SERVER_IP":monitorless/applications/cassandra/metrics.tar.gz "$RUN_DIR/metrics.tar.gz"
+
+	DO_SEED=0 \
+		SERVER_IP="$SERVER_IP" \
+		RECORD_COUNT="$RECORD_COUNT" \
+		WARMUP_DURATION="$WARMUP_DURATION" \
+		WARMUP_RPS="$WARMUP_RPS" \
+		WARMUP_PAUSE="$WARMUP_PAUSE" \
+		MINIMUM_RPS="$MINIMUM_RPS" \
+		MAXIMUM_RPS="$MAXIMUM_RPS" \
+		BENCHMARK_DURATION="$BENCHMARK_DURATION" \
+		STEP_DURATION="$STEP_DURATION" \
+		WORKLOAD="$WORKLOAD" \
+		docker compose up \
+		--force-recreate --build
+
+	DO_SEED=0 \
+		SERVER_IP="$SERVER_IP" \
+		RECORD_COUNT="$RECORD_COUNT" \
+		WARMUP_DURATION="$WARMUP_DURATION" \
+		WARMUP_RPS="$WARMUP_RPS" \
+		WARMUP_PAUSE="$WARMUP_PAUSE" \
+		MINIMUM_RPS="$MINIMUM_RPS" \
+		MAXIMUM_RPS="$MAXIMUM_RPS" \
+		BENCHMARK_DURATION="$BENCHMARK_DURATION" \
+		STEP_DURATION="$STEP_DURATION" \
+		WORKLOAD="$WORKLOAD" \
+		docker compose logs --no-log-prefix cassandra-client >"$RUN_DIR/summary.log"
+
+	bash remote_docker.sh \
+		--ip="$SERVER_IP" \
+		--user="$USER" \
+		--cpus="$CPUS" \
+		--memory="$MEMORY" \
+		--cmd="up"
 )
