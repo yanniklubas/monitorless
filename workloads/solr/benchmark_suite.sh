@@ -30,14 +30,14 @@ if [ ! -f "$PWD/$JAR_NAME" ]; then
 fi
 
 START_TIME=$(date +%s)
-MEASURMENTS_DIR="$HOME/measurements/cassandra/benchmark-$START_TIME"
+MEASURMENTS_DIR="$HOME/measurements/solr/benchmark-$START_TIME"
 mkdir -p "$MEASURMENTS_DIR"
 VOLUME_NAME="prometheus-data-$START_TIME"
 
 # Create docker volume if it does not exist"
 ssh "$USER"@"$SERVER_IP" '
 docker volume create '"$VOLUME_NAME"' >/dev/null
-cd $HOME/monitorless/applications/cassandra
+cd $HOME/monitorless/applications/solr
 echo MG_PROMETHEUS_VOLUME_NAME='"$VOLUME_NAME"' > .env
 '
 
@@ -51,7 +51,7 @@ for t in "${BENCHMARKS[@]}"; do
 	MEMORY="${RUN[1]}"
 	PROFILE="${RUN[2]}"
 
-	bash benchmark.sh \
+	bash run_workload.sh \
 		--profile="$PWD/$PROFILE" \
 		--cpus="$CPU" \
 		--memory="$MEMORY" \
@@ -63,7 +63,8 @@ for t in "${BENCHMARKS[@]}"; do
 		--wp-duration="$WARMUP_DURATION_SEC" \
 		--wp-rps="$WARMUP_RPS" \
 		--wp-pause="$WARMUP_PAUSE_SEC" \
-		--workload="$PWD/workload.yml"
+		--workload="$PWD/workload.yml" \
+		--measurements="$MEASURMENTS_DIR"
 done
 
 ssh "$USER"@"$SERVER_IP" 'rm /tmp/metrics.tar.gz 2>/dev/null

@@ -9,6 +9,7 @@ PROFILE=""
 CPUS=""
 MEMORY=""
 SERVER_IP=""
+MEASUREMENTS_DIR=""
 
 # +++++++++++++++++++++++++++++
 # ++ BENCHMARK CONFIGURATION ++
@@ -70,6 +71,10 @@ for opt in "$@"; do
 		;;
 	--workload=*)
 		WORKLOAD_FILE="${opt#*=}"
+		shift
+		;;
+	--measurements=*)
+		MEASUREMENTS_DIR="${opt#*=}"
 		shift
 		;;
 	-*)
@@ -135,8 +140,6 @@ fi
 	SCRIPT_PATH=$(readlink -f -- "${SCRIPT_PATH}")
 	cd "${SCRIPT_PATH}"
 
-	MEASUREMENTS_DIR="$HOME/measurements/solr"
-	mkdir -p "$MEASUREMENTS_DIR"
 	DIR_NAME="cpu-$CPUS-memory-$MEMORY-duration-$BENCHMARK_DURATION"
 	RUN_DIR="$MEASUREMENTS_DIR/$DIR_NAME"
 
@@ -147,6 +150,7 @@ fi
 		mv "$RUN_DIR" "$BACKUP"
 	fi
 	mkdir -p "$RUN_DIR"
+
 	CONFIG_FILE="$RUN_DIR/config.yml"
 	printf "Saving benchmark configuration to %s\n" "$CONFIG_FILE" 1>&2
 	touch "$CONFIG_FILE"
@@ -166,11 +170,35 @@ fi
 	} >>"$CONFIG_FILE"
 
 	printf "Starting Solr server on %s\n" "$SERVER_IP"
-	bash start_server.sh --ip="$SERVER_IP" --user="$USER" --cpus="$CPUS" --memory="$MEMORY"
+	bash remote_docker.sh \
+		--ip="$SERVER_IP" \
+		--user="$USER" \
+		--cpus="$CPUS" \
+		--memory="$MEMORY" \
+		--cmd="up"
+
 	printf "Waiting on Solr server.\n"
 	bash query.sh "$SERVER_IP"
-	sed -e 's/{{APPLICATION_HOST}}/'"$SERVER_IP"':8983/g' "$WORKLOAD_FILE" >parsed.yml
-	YAML_PATH="$PWD/parsed.yml" BENCHMARK_RUN="$RUN_DIR" PROFILE="$PROFILE" BENCHMARK_DURATION="$BENCHMARK_DURATION" DIRECTOR_THREADS="$DIRECTOR_THREADS" VIRTUAL_USERS="$VIRTUAL_USER" TIMEOUT="$TIMEOUT" WARMUP_DURATION="$WARMUP_DURATION" WARMUP_RPS="$WARMUP_RPS" WARMUP_PAUSE="$WARMUP_PAUSE" docker compose up --build --abort-on-container-exit --force-recreate
-	ssh "$USER"@"$SERVER_IP" 'cd monitorless/applications/solr; PROMETHEUS_UID="$(id -u)" PROMETHEUS_GID="$(id -g)" HEAP_MEMORY='"$MEMORY"' CPUS='"$CPUS"' docker compose down; tar --no-xattrs -czf metrics.tar.gz metrics/; rm -rf metrics'
-	scp "$USER"@"$SERVER_IP":monitorless/applications/solr/metrics.tar.gz "$RUN_DIR/metrics.tar.gz"
+	YAML_FILE="$PWD/parsed.yml"
+	sed -e 's/{{APPLICATION_HOST}}/'"$SERVER_IP"':8983/g' "$WORKLOAD_FILE" >"$YAML_FILE"
+	YAML_PATH="$YAML_FILE" \
+		BENCHMARK_RUN="$RUN_DIR" \
+		PROFILE="$PROFILE" \
+		BENCHMARK_DURATION="$BENCHMARK_DURATION" \
+		DIRECTOR_THREADS="$DIRECTOR_THREADS" \
+		VIRTUAL_USERS="$VIRTUAL_USER" \
+		TIMEOUT="$TIMEOUT" \
+		WARMUP_DURATION="$WARMUP_DURATION" \
+		WARMUP_RPS="$WARMUP_RPS" \
+		WARMUP_PAUSE="$WARMUP_PAUSE" \
+		docker compose up \
+		--build --abort-on-container-exit --force-recreate
+
+	bash remote_docker.sh \
+		--ip="$SERVER_IP" \
+		--user="$USER" \
+		--cpus="$CPUS" \
+		--memory="$MEMORY" \
+		--cmd="down"
+	rm "$YAML_FILE"
 )
