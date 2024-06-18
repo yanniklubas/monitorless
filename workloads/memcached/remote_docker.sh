@@ -37,19 +37,19 @@ for opt in "$@"; do
 done
 
 if [ -z "$SERVER_IP" ]; then
-	printf "invalid arguments: server ip must be set using --ip=<ip>" 1>&2
+	printf "invalid arguments: server ip must be set using --ip=<ip>\n" 1>&2
 	exit 1
 fi
 if [ -z "$USER" ]; then
-	printf "invalid arguments: user must be set using --user=<user>" 1>&2
+	printf "invalid arguments: user must be set using --user=<user>\n" 1>&2
 	exit 1
 fi
 if [ -z "$CPUS" ]; then
-	printf "invalid arguments: cpus must be set using --cpus=<cpus>" 1>&2
+	printf "invalid arguments: cpus must be set using --cpus=<cpus>\n" 1>&2
 	exit 1
 fi
 if [ -z "$MEMORY" ]; then
-	printf "invalid arguments: user must be set using --memory=<memory>" 1>&2
+	printf "invalid arguments: user must be set using --memory=<memory>\n" 1>&2
 	exit 1
 fi
 if [ "$DOCKER_CMD" = "up" ]; then
