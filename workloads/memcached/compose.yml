@@ -1,0 +1,13 @@
+services:
+  memcached-client:
+    build: .
+    volumes:
+      - ${SERVERS_FILE}:/usr/src/memcached/memcached_client/docker_servers/docker_servers.txt
+      - ${PWD}/entrypoint.sh:/run.sh
+    entrypoint: ["/bin/bash", "/run.sh"]
+    environment:
+      - SERVER_MEMORY=$SERVER_MEMORY
+      - MINIMUM_RPS=$MINIMUM_RPS
+      - MAXIMUM_RPS=$MAXIMUM_RPS
+      - BENCHMARK_DURATION=$BENCHMARK_DURATION
+      - STEP_DURATION=$STEP_DURATION
