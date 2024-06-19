@@ -68,4 +68,4 @@ docker run \
 	busybox \
 	tar -czf /backup/metrics.tar.gz /data/
 rm $HOME/monitorless/applications/cassandra/.env'
-scp "$USER"@"$SERVER_IP":/tmp/metrics.tar.gz "$RUN_DIR/metrics.tar.gz"
+scp "$USER"@"$SERVER_IP":/tmp/metrics.tar.gz "$MEASURMENTS_DIR/metrics.tar.gz"
