@@ -30,7 +30,7 @@ if [ ! -f "$PWD/$JAR_NAME" ]; then
 fi
 
 START_TIME=$(date +%s)
-MEASURMENTS_DIR="$HOME/measurements/solr/benchmark-$START_TIME"
+MEASURMENTS_DIR="$1"
 mkdir -p "$MEASURMENTS_DIR"
 VOLUME_NAME="prometheus-data-$START_TIME"
 
@@ -74,5 +74,6 @@ docker run \
 	-v '"$VOLUME_NAME"':/data \
 	busybox \
 	tar -czf /backup/metrics.tar.gz /data/
-rm $HOME/monitorless/applications/solr/.env'
+rm $HOME/monitorless/applications/solr/.env
+docker volume rm '"$VOLUME_NAME"''
 scp "$USER"@"$SERVER_IP":/tmp/metrics.tar.gz "$MEASURMENTS_DIR/metrics.tar.gz"

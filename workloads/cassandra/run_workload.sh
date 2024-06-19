@@ -244,5 +244,5 @@ fi
 		--user="$USER" \
 		--cpus="$CPUS" \
 		--memory="$MEMORY" \
-		--cmd="up"
+		--cmd="down"
 )
