@@ -63,10 +63,13 @@ done
 ssh "$USER"@"$SERVER_IP" 'rm /tmp/metrics.tar.gz 2>/dev/null
 docker run \
 	--rm \
-	-v /tmp:/backup \
-	-v '"$VOLUME_NAME"':/data \
+	--volume /tmp:/backup \
+	--volume '"$VOLUME_NAME"':/data \
+	--user 65534:65534 \
 	busybox \
 	tar -czf /backup/metrics.tar.gz /data/
 rm $HOME/monitorless/applications/cassandra/.env
+cd $HOME/monitorless/applications/cassandra
+CPUS=1 docker compose down -v
 docker volume rm '"$VOLUME_NAME"''
 scp "$USER"@"$SERVER_IP":/tmp/metrics.tar.gz "$MEASURMENTS_DIR/metrics.tar.gz"

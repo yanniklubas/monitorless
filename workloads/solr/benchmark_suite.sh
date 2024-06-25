@@ -70,8 +70,9 @@ done
 ssh "$USER"@"$SERVER_IP" 'rm /tmp/metrics.tar.gz 2>/dev/null
 docker run \
 	--rm \
-	-v /tmp:/backup \
-	-v '"$VOLUME_NAME"':/data \
+	--volume /tmp:/backup \
+	--volume '"$VOLUME_NAME"':/data \
+	--user 65534:65534 \
 	busybox \
 	tar -czf /backup/metrics.tar.gz /data/
 rm $HOME/monitorless/applications/solr/.env

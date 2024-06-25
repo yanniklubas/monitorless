@@ -16,3 +16,6 @@ mkdir -p "$MEASUREMENTS_DIR"
 	cd cassandra
 	bash benchmark_suite.sh "$MEASUREMENTS_DIR/cassandra"
 )
+(
+	bash parallel.sh "$MEASUREMENTS_DIR/parallel"
+)

@@ -9,8 +9,11 @@ echo "Minimum Requests per Second: $MINIMUM_RPS r/s"
 echo "Maximum Requests per Second: $MAXIMUM_RPS r/s"
 echo "Benchmark Duration: $BENCHMARK_DURATION s"
 echo "Step Duration: $STEP_DURATION s"
+NO_WARMUP="${NO_WARMUP:-0}"
 
-/entrypoint.sh --m="S&W" --S=28 --D="$SERVER_MEMORY" --w=4
+if [ "$NO_WARMUP" -ne 1 ]; then
+	/entrypoint.sh --m="S&W" --S=28 --D="$SERVER_MEMORY" --w=4
+fi
 
 for i in {5..1}; do
 	echo "Starting load step in $i seconds..."
