@@ -47,6 +47,8 @@ if [ ! -f "$PWD/$JAR_NAME" ]; then
 	cp "$LOAD_GENERATOR_LOC/$JAR_NAME" "$PWD/$JAR_NAME"
 fi
 
+printf "Creating volumes...\n" >&2
+
 START_TIME=$(date +%s)
 MEASURMENTS_DIR="$1"
 mkdir -p "$MEASURMENTS_DIR"
@@ -66,6 +68,8 @@ echo MG_PROMETHEUS_VOLUME_NAME='"$MEMCACHED_VOLUME_NAME"' > .env
 cd $HOME/monitorless/applications/cassandra
 echo MG_PROMETHEUS_VOLUME_NAME='"$CASSANDRA_VOLUME_NAME"' > .env
 '
+
+printf "Created volumes!\n" >&2
 
 remote_docker() {
 	local file="$1/remote_docker.sh"
