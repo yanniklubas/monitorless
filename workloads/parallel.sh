@@ -294,18 +294,23 @@ for ((i = 0; i < ${#BENCHMARKS[@]}; i += 2)); do
 	pids=()
 	RUN_DIR_1="$MEASURMENTS_DIR/$NAME_1-$NUMBER_1"
 	mkdir -p "$RUN_DIR_1"
-	start_workload "$NAME_1" "$RUN_DIR_1" "${RUN_1[@]:4}" "$MEMORY_1" &
-	pids[0]=$!
 	RUN_DIR_2="$MEASURMENTS_DIR/$NAME_2-$NUMBER_2"
 	mkdir -p "$RUN_DIR_2"
+	printf "Starting workload for %s\n" "$NAME_1" >&2
+	start_workload "$NAME_1" "$RUN_DIR_1" "${RUN_1[@]:4}" "$MEMORY_1" &
+	pids[0]=$!
+	printf "Starting workload for %s\n" "$NAME_2" >&2
 	start_workload "$NAME_2" "$RUN_DIR_2" "${RUN_2[@]:4}" "$MEMORY_2" &
 	pids[1]=$!
 
 	for pid in "${pids[@]}"; do
+		printf "Waiting for %s\n" "$pid" >&2
 		wait "$pid"
 	done
 
+	printf "Stopping application %s\n" "$NAME_1" >&2
 	remote_docker "$NAME_1" "$CPU_1" "$MEMORY_1" "down"
+	printf "Stopping application %s\n" "$NAME_2" >&2
 	remote_docker "$NAME_2" "$CPU_2" "$MEMORY_2" "down"
 done
 
