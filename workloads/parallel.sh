@@ -99,7 +99,7 @@ warmup() {
 			# TODO
 			YAML_PATH="$YAML_FILE" \
 				BENCHMARK_RUN="/tmp" \
-				PROFILE="$PWD/sin1000.csv" \
+				PROFILE="$PWD/noop.csv" \
 				BENCHMARK_DURATION="0" \
 				DIRECTOR_THREADS="256" \
 				VIRTUAL_USERS="$VIRTUAL_USERS" \
@@ -336,6 +336,8 @@ docker run \
 rm $HOME/monitorless/applications/solr/.env
 rm $HOME/monitorless/applications/memcached/.env
 rm $HOME/monitorless/applications/cassandra/.env
+cd $HOME/monitorless/applications/cassandra
+CPUS=1 docker compose down -v
 docker volume rm '"$SOLR_VOLUME_NAME"'
 docker volume rm '"$CASSANDRA_VOLUME_NAME"'
 docker volume rm '"$MEMCACHED_VOLUME_NAME"''
