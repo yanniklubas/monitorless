@@ -266,8 +266,8 @@ for ((i = 0; i < ${#BENCHMARKS[@]}; i += 2)); do
 	IFS="$oIFS"
 	unset oIFS
 
-	start_application "$NAME_1" "$CPU_1" "$MEMORY_1" "up"
-	start_application "$NAME_2" "$CPU_2" "$MEMORY_2" "up"
+	remote_docker "$NAME_1" "$CPU_1" "$MEMORY_1" "up"
+	remote_docker "$NAME_2" "$CPU_2" "$MEMORY_2" "up"
 
 	pids=()
 	warmup "$NAME_1" &
@@ -293,6 +293,8 @@ for ((i = 0; i < ${#BENCHMARKS[@]}; i += 2)); do
 		wait "$pid"
 	done
 
+	remote_docker "$NAME_1" "$CPU_1" "$MEMORY_1" "down"
+	remote_docker "$NAME_2" "$CPU_2" "$MEMORY_2" "down"
 done
 
 ssh "$USER"@"$SERVER_IP" 'rm /tmp/solr_metrics.tar.gz 2>/dev/null
