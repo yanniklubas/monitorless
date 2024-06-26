@@ -5,6 +5,9 @@ START_TIME=$(date +%s)
 MEASUREMENTS_DIR="$HOME/measurements/benchmark-$START_TIME"
 mkdir -p "$MEASUREMENTS_DIR"
 (
+	bash parallel.sh "$MEASUREMENTS_DIR/parallel"
+)
+(
 	cd solr
 	bash benchmark_suite.sh "$MEASUREMENTS_DIR/solr"
 )
@@ -15,7 +18,4 @@ mkdir -p "$MEASUREMENTS_DIR"
 (
 	cd cassandra
 	bash benchmark_suite.sh "$MEASUREMENTS_DIR/cassandra"
-)
-(
-	bash parallel.sh "$MEASUREMENTS_DIR/parallel"
 )
