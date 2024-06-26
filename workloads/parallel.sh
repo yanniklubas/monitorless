@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -eou pipefail
 
-SERVER_IP="10.128.0.4"
+SERVER_IP="10.128.0.5"
 # Tuple format
 # Solr: Number, CPU, Memory, Profile
 # Cassandra: Number, CPU, Memory, Workload, Min-RPS, Max-RPS

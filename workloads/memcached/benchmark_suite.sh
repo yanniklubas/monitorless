@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail # abort on nonzero exit status, unbound variable and don't hide errors within pipes
 
-SERVER_IP="10.128.0.4"
+SERVER_IP="10.128.0.5"
 DURATION_SEC=600
 STEP_DURATION_SEC=30
 # Tuple format cpu, memory, min-rps, max-rps

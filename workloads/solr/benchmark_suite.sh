@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-SERVER_IP="10.128.0.4"
+SERVER_IP="10.128.0.5"
 # Tuple format CPU, Mem, Profile
 #        |++++ #1 +++++| |+++++ #2 +++++|
 BENCHMARKS=("3 14g sin1000.csv" "8 14g sin1000.csv")

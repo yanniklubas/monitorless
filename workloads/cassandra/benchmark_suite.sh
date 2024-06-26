@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-SERVER_IP="10.128.0.4"
+SERVER_IP="10.128.0.5"
 RECORD_COUNT=10000000
 # Tuple format cpu, memory, workload, min-rps, max-rps
 # Workload ordering based on https://github.com/brianfrankcooper/YCSB/wiki/Core-Workloads#running-the-workloads
