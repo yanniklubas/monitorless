@@ -165,7 +165,7 @@ start_workload() {
 	"solr")
 		(
 			cd "solr"
-			local profile="$3"
+			local profile="$PWD/$3"
 			WORKLOAD_FILE="$PWD/workload.yml"
 			YAML_FILE="$PWD/parsed.yml"
 			sed -e 's/{{APPLICATION_HOST}}/'"$SERVER_IP"':8983/g' "$WORKLOAD_FILE" >"$YAML_FILE"
