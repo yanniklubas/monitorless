@@ -35,16 +35,18 @@ PORT=11211
 #+++++++++++++++++++++++++++
 
 # Download dataset if the web_search_data container does not exist
-ssh "$USER"@"$SERVER_IP" '[ ! "$(docker ps -a | grep "web_search_dataset")" ] && docker run --name web_search_dataset cloudsuite/web-search:dataset'
+printf "Checking for solr dataset...\n" >&2
+ssh "$USER"@"$SERVER_IP" '[ ! "$(docker ps -a | grep "web_search_dataset")" ] && docker run --name web_search_dataset cloudsuite/web-search:dataset || exit 0'
 
 # Copy load generator .jar, if not exists
+printf "Checking for load generator...\n" >&2
 JAR_NAME="httploadgenerator.jar"
-if [ ! -f "$PWD/$JAR_NAME" ]; then
+if [ ! -f "$PWD/solr/$JAR_NAME" ]; then
 	if [ ! -f "$LOAD_GENERATOR_LOC/$JAR_NAME" ]; then
 		printf "expected load generator jar at %s\n" "$LOAD_GENERATOR_LOC/$JAR_NAME" 1>&2
 		exit 1
 	fi
-	cp "$LOAD_GENERATOR_LOC/$JAR_NAME" "$PWD/$JAR_NAME"
+	cp "$LOAD_GENERATOR_LOC/$JAR_NAME" "$PWD/solr/$JAR_NAME"
 fi
 
 printf "Creating volumes...\n" >&2
@@ -270,12 +272,16 @@ for ((i = 0; i < ${#BENCHMARKS[@]}; i += 2)); do
 	IFS="$oIFS"
 	unset oIFS
 
+	printf "Starting %s...\n" "$NAME_1" >&2
 	remote_docker "$NAME_1" "$CPU_1" "$MEMORY_1" "up"
+	printf "Starting %s...\n" "$NAME_2" >&2
 	remote_docker "$NAME_2" "$CPU_2" "$MEMORY_2" "up"
 
 	pids=()
+	printf "Starting warmup for %s...\n" "$NAME_1" >&2
 	warmup "$NAME_1" &
 	pids[0]=$!
+	printf "Starting warmup for %s...\n" "$NAME_2" >&2
 	warmup "$NAME_2" &
 	pids[1]=$!
 
