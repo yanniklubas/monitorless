@@ -210,7 +210,7 @@ start_workload() {
 				STEP_DURATION="$STEP_DURATION" \
 				WORKLOAD="$workload" \
 				docker compose up \
-				--force-recreate--build
+				--force-recreate --build
 
 			DO_SEED=0 \
 				SERVER_IP="$SERVER_IP" \
