@@ -116,11 +116,13 @@ warmup() {
 		(
 			cd "cassandra"
 			if [ "$SEED" -eq 1 ]; then
+				printf "Seeding cassandra...\n" >&2
 				DO_SEED=1 \
 					WORKLOAD="workloada" \
 					SERVER_IP="$SERVER_IP" \
 					RECORD_COUNT="$RECORD_COUNT" \
 					docker compose up --force-recreate --build
+				SEED=0
 			fi
 			DO_SEED=0 \
 				SERVER_IP="$SERVER_IP" \
@@ -272,9 +274,9 @@ for ((i = 0; i < ${#BENCHMARKS[@]}; i += 2)); do
 	IFS="$oIFS"
 	unset oIFS
 
-	printf "Starting %s...\n" "$NAME_1" >&2
+	printf "Starting %s with %s CPUS and %s Memory...\n" "$NAME_1" "$CPU_1" "$MEMORY_1" >&2
 	remote_docker "$NAME_1" "$CPU_1" "$MEMORY_1" "up"
-	printf "Starting %s...\n" "$NAME_2" >&2
+	printf "Starting %s with %s CPUS and %s Memory...\n" "$NAME_2" "$CPU_2" "$MEMORY_2" >&2
 	remote_docker "$NAME_2" "$CPU_2" "$MEMORY_2" "up"
 
 	pids=()
