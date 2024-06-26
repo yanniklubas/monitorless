@@ -136,7 +136,7 @@ warmup() {
 				STEP_DURATION="0" \
 				WORKLOAD="workloada" \
 				docker compose up \
-				--force-recreate--build
+				--force-recreate --build
 		)
 		;;
 	"memcached")
