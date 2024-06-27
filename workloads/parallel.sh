@@ -160,6 +160,67 @@ warmup() {
 	esac
 }
 
+save_config() {
+	local run_dir="$1"
+	local config_file="$run_dir/config.yml"
+	local name="$2"
+	case "$name" in
+	"solr")
+		local cpu="$4"
+		local memory="$5"
+		local profile="$6"
+		printf "profile: %s\n" "$profile" >"$config_file"
+		{
+			printf "cpus: %d\n" "$cpus"
+			printf "memory: %s\n" "$memory"
+			printf "server_ip: %s\n" "$SERVER_IP"
+			printf "duration: %d\n" "$DURATION_SEC"
+			printf "threads: %d\n" "256"
+			printf "virtual_users: %d\n" "$VIRTUAL_USERS"
+			printf "timeout: %d\n" "$TIMEOUT_MS"
+			printf "warmup_duration: %d\n" "$WARMUP_DURATION_SEC"
+			printf "warmup_rps: %d\n" "$WARMUP_RPS"
+			printf "warmup_pause: %d\n" "$WARMUP_PAUSE_SEC"
+		} >>"$config_file"
+		;;
+	"cassandra")
+		local cpu="$4"
+		local memory="$5"
+		local workload="$6"
+		local min_rps="$7"
+		local max_rps="$8"
+		printf "workload: %s\n" "$workload" >"$config_file"
+		{
+			printf "cpus: %d\n" "$cpu"
+			printf "memory: %s\n" "$memory"
+			printf "server_ip: %s\n" "$SERVER_IP"
+			printf "duration: %d\n" "$DURATION_SEC"
+			printf "warmup_duration: %d\n" "$WARMUP_DURATION_SEC"
+			printf "warmup_rps: %d\n" "100"
+			printf "warmup_pause: %d\n" "$WARMUP_PAUSE_SEC"
+			printf "minimum_rps: %d\n" "$min_rps"
+			printf "maximum_rps: %d\n" "$max_rps"
+			printf "step_duration: %d\n" "$STEP_DURATION"
+		} >>"$config_file"
+		;;
+	"memcached")
+		local cpu="$4"
+		local memory="$5"
+		local min_rps="$6"
+		local max_rps="$7"
+		printf "cpus: %d\n" "$cpu" >"$config_file"
+		{
+			printf "memory: %s\n" "$memory"
+			printf "server_ip: %s\n" "$SERVER_IP"
+			printf "duration: %d\n" "$BENCHMARK_DURATION_SEC"
+			printf "minimum_rps: %d\n" "$min_rps"
+			printf "maximum_rps: %d\n" "$max_rps"
+			printf "step_duration: %d\n" "$STEP_DURATION"
+		} >>"$config_file"
+		;;
+	esac
+}
+
 start_workload() {
 	local name="$1"
 	local run_dir="$2"
@@ -290,6 +351,10 @@ for ((i = 0; i < ${#BENCHMARKS[@]}; i += 2)); do
 	mkdir -p "$RUN_DIR_1"
 	RUN_DIR_2="$MEASURMENTS_DIR/$NAME_2-$NUMBER_2"
 	mkdir -p "$RUN_DIR_2"
+	printf "Saving config for %s\n" "$NAME_1" >&2
+	save_config "$RUN_DIR_1" "${RUN_1[@]}"
+	printf "Saving config for %s\n" "$NAME_2" >&2
+	save_config "$RUN_DIR_2" "${RUN_2[@]}"
 	printf "Starting workload for %s\n" "$NAME_1" >&2
 	start_workload "$NAME_1" "$RUN_DIR_1" "${RUN_1[@]:4}" "$MEMORY_1" &
 	run_pids[0]=$!
