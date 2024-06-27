@@ -40,6 +40,9 @@ else
 
 	echo "Warmup completed!"
 	sleep "$WARMUP_PAUSE"
+	if [ "$BENCHMARK_DURATION" -eq "0" ]; then
+		exit 0
+	fi
 
 	NUMBER_OF_STEPS=$((BENCHMARK_DURATION / STEP_DURATION))
 	NUMBER_OF_STEPS=$((NUMBER_OF_STEPS - 1))
