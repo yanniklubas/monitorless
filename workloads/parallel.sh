@@ -171,7 +171,7 @@ save_config() {
 		local profile="$6"
 		printf "profile: %s\n" "$profile" >"$config_file"
 		{
-			printf "cpus: %d\n" "$cpus"
+			printf "cpus: %d\n" "$cpu"
 			printf "memory: %s\n" "$memory"
 			printf "server_ip: %s\n" "$SERVER_IP"
 			printf "duration: %d\n" "$DURATION_SEC"
