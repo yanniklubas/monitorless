@@ -13,12 +13,11 @@ NO_WARMUP="${NO_WARMUP:-0}"
 
 if [ "$NO_WARMUP" -ne 1 ]; then
 	/entrypoint.sh --m="S&W" --S=28 --D="$SERVER_MEMORY" --w=4
+	for i in {5..1}; do
+		echo "Starting load step in $i seconds..."
+		sleep 1
+	done
 fi
-
-for i in {5..1}; do
-	echo "Starting load step in $i seconds..."
-	sleep 1
-done
 
 if [ "$BENCHMARK_DURATION" -eq "0" ]; then
 	exit 0

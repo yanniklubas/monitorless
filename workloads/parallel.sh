@@ -337,10 +337,10 @@ for ((i = 0; i < ${#BENCHMARKS[@]}; i += 2)); do
 	pids=()
 	printf "Starting warmup for %s...\n" "$NAME_1" >&2
 	warmup "$NAME_1" "$MEMORY_1" &
-	pids[0]=$!
+	pids+=("$!")
 	printf "Starting warmup for %s...\n" "$NAME_2" >&2
 	warmup "$NAME_2" "$MEMORY_2" &
-	pids[1]=$!
+	pids+=("$!")
 
 	for pid in "${pids[@]}"; do
 		wait "$pid"
@@ -357,10 +357,10 @@ for ((i = 0; i < ${#BENCHMARKS[@]}; i += 2)); do
 	save_config "$RUN_DIR_2" "${RUN_2[@]}"
 	printf "Starting workload for %s\n" "$NAME_1" >&2
 	start_workload "$NAME_1" "$RUN_DIR_1" "${RUN_1[@]:4}" "$MEMORY_1" &
-	run_pids[0]=$!
+	run_pids+=("$!")
 	printf "Starting workload for %s\n" "$NAME_2" >&2
 	start_workload "$NAME_2" "$RUN_DIR_2" "${RUN_2[@]:4}" "$MEMORY_2" &
-	run_pids[1]=$!
+	run_pids+=("$!")
 
 	for pid in "${run_pids[@]}"; do
 		printf "Waiting for %s\n" "$pid" >&2
