@@ -15,7 +15,7 @@ BENCHMARKS=(
 	"cassandra 16 6 28 workloadd 10000 25000" # 16
 	"solr 6 1.5 8g sinnoise1000.csv"          # 6
 	"cassandra 17 6 28 workloadb 5000 20000"  # 17
-	"memcached 10 8 4 10000 65000"            # 10
+	"memcached 10 8 4096 10000 65000"         # 10
 	"cassandra 18 6 28 workloadb 10000 10000" # 18
 )
 DURATION_SEC=600
@@ -154,13 +154,6 @@ warmup() {
 				docker compose up \
 				--force-recreate --build
 
-			SERVERS_FILE="$servers_file" \
-				SERVER_MEMORY="$memory" \
-				MINIMUM_RPS="0" \
-				MAXIMUM_RPS="0" \
-				BENCHMARK_DURATION="0" \
-				STEP_DURATION="0" \
-				docker compose logs --no-log-prefix memcached-client >"$run_dir/summary.log"
 			rm "$servers_file"
 		)
 		;;
