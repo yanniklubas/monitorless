@@ -143,6 +143,7 @@ warmup() {
 		(
 			cd "memcached"
 			local servers_file="$PWD/tmp_servers.txt"
+			local memory="$2"
 			printf "%s, %d\n" "$SERVER_IP" "$PORT" >"$servers_file"
 			SERVERS_FILE="$servers_file" \
 				SERVER_MEMORY="$memory" \
@@ -281,10 +282,10 @@ for ((i = 0; i < ${#BENCHMARKS[@]}; i += 2)); do
 
 	pids=()
 	printf "Starting warmup for %s...\n" "$NAME_1" >&2
-	warmup "$NAME_1" &
+	warmup "$NAME_1" "$MEMORY_1" &
 	pids[0]=$!
 	printf "Starting warmup for %s...\n" "$NAME_2" >&2
-	warmup "$NAME_2" &
+	warmup "$NAME_2" "$MEMORY_2" &
 	pids[1]=$!
 
 	for pid in "${pids[@]}"; do
