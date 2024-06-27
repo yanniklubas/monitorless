@@ -212,7 +212,7 @@ save_config() {
 		{
 			printf "memory: %s\n" "$memory"
 			printf "server_ip: %s\n" "$SERVER_IP"
-			printf "duration: %d\n" "$BENCHMARK_DURATION_SEC"
+			printf "duration: %d\n" "$DURATION_SEC"
 			printf "minimum_rps: %d\n" "$min_rps"
 			printf "maximum_rps: %d\n" "$max_rps"
 			printf "step_duration: %d\n" "$STEP_DURATION"
