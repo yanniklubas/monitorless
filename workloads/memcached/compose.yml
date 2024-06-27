@@ -4,6 +4,7 @@ services:
     volumes:
       - ${SERVERS_FILE}:/usr/src/memcached/memcached_client/docker_servers/docker_servers.txt
       - ${PWD}/entrypoint.sh:/run.sh
+      - memcached-dataset:/usr/src/memcached/twitter_dataset:rw
     entrypoint: ["/bin/bash", "/run.sh"]
     environment:
       - SERVER_MEMORY=$SERVER_MEMORY
@@ -12,3 +13,5 @@ services:
       - BENCHMARK_DURATION=$BENCHMARK_DURATION
       - STEP_DURATION=$STEP_DURATION
       - NO_WARMUP=$NO_WARMUP
+volumes:
+  memcached-dataset:
