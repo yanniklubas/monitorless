@@ -36,19 +36,19 @@ if [ "$MODE" = 'S&W' ]; then
 	echo "scale and warmup"
 	/usr/src/memcached/memcached_client/loader \
 		-a /usr/src/memcached/twitter_dataset/twitter_dataset_unscaled \
-		-o '/usr/src/memcached/twitter_dataset/twitter_dataset_'"$SCALE"'x' \
+		-o "/usr/src/memcached/twitter_dataset/twitter_dataset_${SCALE}x" \
 		-s /usr/src/memcached/memcached_client/docker_servers/docker_servers.txt \
 		-w "$WORKERS" -S "$SCALE" -D "$SERVER_MEMORY" -j -T "$INTERVAL"
 elif [ "$MODE" = 'W' ]; then
 	echo "warmup"
 	/usr/src/memcached/memcached_client/loader \
-		-a '/usr/src/memcached/twitter_dataset/twitter_dataset_'"$SCALE"'x' \
+		-a "/usr/src/memcached/twitter_dataset/twitter_dataset_${SCALE}x" \
 		-s /usr/src/memcached/memcached_client/docker_servers/docker_servers.txt \
 		-w "$WORKERS" -S 1 -D "$SERVER_MEMORY" -j -T "$INTERVAL"
 elif [ "$MODE" = 'TH' ]; then
 	echo "max throughput"
 	/usr/src/memcached/memcached_client/loader \
-		-a '/usr/src/memcached/twitter_dataset/twitter_dataset_'"$SCALE"'x' \
+		-a "/usr/src/memcached/twitter_dataset/twitter_dataset_${SCALE}x" \
 		-s /usr/src/memcached/memcached_client/docker_servers/docker_servers.txt \
 		-g "$GET_RATIO" -w "$WORKERS" -c "$CONNECTION" -T "$INTERVAL"
 elif [ "$MODE" = 'RPS' ]; then
@@ -57,7 +57,7 @@ elif [ "$MODE" = 'RPS' ]; then
 		ADDITIONA_OPTION="-e"
 	fi
 	/usr/src/memcached/memcached_client/loader \
-		-a '/usr/src/memcached/twitter_dataset/twitter_dataset_'"$SCALE"'x' \
+		-a "/usr/src/memcached/twitter_dataset/twitter_dataset_${SCALE}x" \
 		-s /usr/src/memcached/memcached_client/docker_servers/docker_servers.txt \
 		-g "$GET_RATIO" -w "$WORKERS" -c "$CONNECTION" -T "$INTERVAL" -t "$DURATION" "$ADDITIONA_OPTION" -r "$RPS"
 elif [ "$MODE" = "bash" ]; then
