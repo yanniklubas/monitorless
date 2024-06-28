@@ -122,7 +122,6 @@ warmup() {
 					SERVER_IP="$SERVER_IP" \
 					RECORD_COUNT="$RECORD_COUNT" \
 					docker compose up --force-recreate --build
-				SEED=0
 			fi
 			DO_SEED=0 \
 				SERVER_IP="$SERVER_IP" \
@@ -138,6 +137,7 @@ warmup() {
 				docker compose up \
 				--force-recreate --build
 		)
+		SEED=0
 		;;
 	"memcached")
 		(
