@@ -137,7 +137,6 @@ warmup() {
 				docker compose up \
 				--force-recreate --build
 		)
-		SEED=0
 		;;
 	"memcached")
 		(
@@ -345,6 +344,12 @@ for ((i = 0; i < ${#BENCHMARKS[@]}; i += 2)); do
 	for pid in "${pids[@]}"; do
 		wait "$pid"
 	done
+
+	if [ "$NAME_1" = "cassandra" ]; then
+		SEED=0
+	elif [ "$NAME_2" = "cassandra" ]; then
+		SEED=0
+	fi
 
 	run_pids=()
 	RUN_DIR_1="$MEASURMENTS_DIR/$NAME_1-$NUMBER_1"
