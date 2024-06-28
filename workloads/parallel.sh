@@ -143,7 +143,7 @@ warmup() {
 			cd "memcached"
 			local servers_file="$PWD/tmp_servers.txt"
 			local memory="$2"
-			printf "%s, %d\n" "$SERVER_IP" "$PORT" >"$servers_file"
+			printf "%s, %s\n" "$SERVER_IP" "$PORT" >"$servers_file"
 			SERVERS_FILE="$servers_file" \
 				SERVER_MEMORY="$memory" \
 				MINIMUM_RPS="0" \
@@ -170,16 +170,16 @@ save_config() {
 		local profile="$6"
 		printf "profile: %s\n" "$profile" >"$config_file"
 		{
-			printf "cpus: %d\n" "$cpu"
+			printf "cpus: %s\n" "$cpu"
 			printf "memory: %s\n" "$memory"
 			printf "server_ip: %s\n" "$SERVER_IP"
-			printf "duration: %d\n" "$DURATION_SEC"
-			printf "threads: %d\n" "256"
-			printf "virtual_users: %d\n" "$VIRTUAL_USERS"
-			printf "timeout: %d\n" "$TIMEOUT_MS"
-			printf "warmup_duration: %d\n" "$WARMUP_DURATION_SEC"
-			printf "warmup_rps: %d\n" "$WARMUP_RPS"
-			printf "warmup_pause: %d\n" "$WARMUP_PAUSE_SEC"
+			printf "duration: %s\n" "$DURATION_SEC"
+			printf "threads: %s\n" "256"
+			printf "virtual_users: %s\n" "$VIRTUAL_USERS"
+			printf "timeout: %s\n" "$TIMEOUT_MS"
+			printf "warmup_duration: %s\n" "$WARMUP_DURATION_SEC"
+			printf "warmup_rps: %s\n" "$WARMUP_RPS"
+			printf "warmup_pause: %s\n" "$WARMUP_PAUSE_SEC"
 		} >>"$config_file"
 		;;
 	"cassandra")
@@ -190,16 +190,16 @@ save_config() {
 		local max_rps="$8"
 		printf "workload: %s\n" "$workload" >"$config_file"
 		{
-			printf "cpus: %d\n" "$cpu"
+			printf "cpus: %s\n" "$cpu"
 			printf "memory: %s\n" "$memory"
 			printf "server_ip: %s\n" "$SERVER_IP"
-			printf "duration: %d\n" "$DURATION_SEC"
-			printf "warmup_duration: %d\n" "$WARMUP_DURATION_SEC"
-			printf "warmup_rps: %d\n" "100"
-			printf "warmup_pause: %d\n" "$WARMUP_PAUSE_SEC"
-			printf "minimum_rps: %d\n" "$min_rps"
-			printf "maximum_rps: %d\n" "$max_rps"
-			printf "step_duration: %d\n" "$STEP_DURATION"
+			printf "duration: %s\n" "$DURATION_SEC"
+			printf "warmup_duration: %s\n" "$WARMUP_DURATION_SEC"
+			printf "warmup_rps: %s\n" "100"
+			printf "warmup_pause: %s\n" "$WARMUP_PAUSE_SEC"
+			printf "minimum_rps: %s\n" "$min_rps"
+			printf "maximum_rps: %s\n" "$max_rps"
+			printf "step_duration: %s\n" "$STEP_DURATION"
 		} >>"$config_file"
 		;;
 	"memcached")
@@ -207,14 +207,14 @@ save_config() {
 		local memory="$5"
 		local min_rps="$6"
 		local max_rps="$7"
-		printf "cpus: %d\n" "$cpu" >"$config_file"
+		printf "cpus: %s\n" "$cpu" >"$config_file"
 		{
 			printf "memory: %s\n" "$memory"
 			printf "server_ip: %s\n" "$SERVER_IP"
-			printf "duration: %d\n" "$DURATION_SEC"
-			printf "minimum_rps: %d\n" "$min_rps"
-			printf "maximum_rps: %d\n" "$max_rps"
-			printf "step_duration: %d\n" "$STEP_DURATION"
+			printf "duration: %s\n" "$DURATION_SEC"
+			printf "minimum_rps: %s\n" "$min_rps"
+			printf "maximum_rps: %s\n" "$max_rps"
+			printf "step_duration: %s\n" "$STEP_DURATION"
 		} >>"$config_file"
 		;;
 	esac
@@ -286,7 +286,7 @@ start_workload() {
 			local max_rps="$4"
 			local memory="$5"
 			local servers_file="$PWD/tmp_servers.txt"
-			printf "%s, %d\n" "$SERVER_IP" "$PORT" >"$servers_file"
+			printf "%s, %s\n" "$SERVER_IP" "$PORT" >"$servers_file"
 			SERVERS_FILE="$servers_file" \
 				SERVER_MEMORY="$memory" \
 				MINIMUM_RPS="$min_rps" \
