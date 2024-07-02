@@ -17,6 +17,8 @@ if [ "$NO_WARMUP" -ne 1 ]; then
 		echo "Starting load step in $i seconds..."
 		sleep 1
 	done
+else
+	echo "You are warmed up, sir"
 fi
 
 if [ "$BENCHMARK_DURATION" -eq "0" ]; then
@@ -28,6 +30,7 @@ NUMBER_OF_STEPS=$((NUMBER_OF_STEPS - 1))
 STEP_INCREMENT=$(((MAXIMUM_RPS - MINIMUM_RPS) / NUMBER_OF_STEPS))
 NUMBER_OF_STEPS=$((NUMBER_OF_STEPS + 1))
 
+STEP_DURATION=$((STEP_DURATION + 1))
 for ((CURRENT_STEP = 0; CURRENT_STEP < NUMBER_OF_STEPS; CURRENT_STEP += 1)); do
 	CURRENT_RPS=$((MINIMUM_RPS + (CURRENT_STEP * STEP_INCREMENT)))
 	/entrypoint.sh --m="RPS" --S=28 --g=0.8 --c=200 --w=4 --T=1 --t="$STEP_DURATION" --r="$CURRENT_RPS"
