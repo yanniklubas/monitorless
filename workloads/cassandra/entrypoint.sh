@@ -33,10 +33,12 @@ else
 	done
 
 	echo "Warming up the JIT cache!"
-	WARMUP_OP_COUNT=$((WARMUP_DURATION * WARMUP_RPS))
-	/ycsb/bin/ycsb.sh run cassandra-cql -p hosts="$SERVER_IP" -P /ycsb/workloads/workloada \
-		-p recordcount="$RECORD_COUNT" -p operationcount="$WARMUP_OP_COUNT" \
-		-threads 16 -target "$WARMUP_RPS" -s
+	if [ "$WARMUP_DURATION" -ne "0" ]; then
+		WARMUP_OP_COUNT=$((WARMUP_DURATION * WARMUP_RPS))
+		/ycsb/bin/ycsb.sh run cassandra-cql -p hosts="$SERVER_IP" -P /ycsb/workloads/workloada \
+			-p recordcount="$RECORD_COUNT" -p operationcount="$WARMUP_OP_COUNT" \
+			-threads 16 -target "$WARMUP_RPS" -s
+	fi
 
 	echo "Warmup completed!"
 	sleep "$WARMUP_PAUSE"
@@ -54,6 +56,6 @@ else
 		OP_COUNT=$((CURRENT_RPS * STEP_DURATION))
 		/ycsb/bin/ycsb.sh run cassandra-cql -p hosts="$SERVER_IP" -P /ycsb/workloads/"$WORKLOAD" \
 			-p recordcount="$RECORD_COUNT" -p operationcount="$OP_COUNT" -p status.interval=1 \
-			-threads 16 -target "$CURRENT_RPS" -s -p maxexecutiontime="$STEP_DURATION"
+			-threads 24 -target "$CURRENT_RPS" -s -p maxexecutiontime="$STEP_DURATION"
 	done
 fi
