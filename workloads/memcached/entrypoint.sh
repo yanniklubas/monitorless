@@ -12,7 +12,7 @@ echo "Step Duration: $STEP_DURATION s"
 NO_WARMUP="${NO_WARMUP:-0}"
 
 if [ "$NO_WARMUP" -ne 1 ]; then
-	/entrypoint.sh --m="S&W" --S=28 --D="$SERVER_MEMORY" --w=4
+	/entrypoint.sh --m="S&W" --S=28 --D="$SERVER_MEMORY" --w=6
 	for i in {5..1}; do
 		echo "Starting load step in $i seconds..."
 		sleep 1
@@ -33,5 +33,5 @@ NUMBER_OF_STEPS=$((NUMBER_OF_STEPS + 1))
 STEP_DURATION=$((STEP_DURATION + 1))
 for ((CURRENT_STEP = 0; CURRENT_STEP < NUMBER_OF_STEPS; CURRENT_STEP += 1)); do
 	CURRENT_RPS=$((MINIMUM_RPS + (CURRENT_STEP * STEP_INCREMENT)))
-	/entrypoint.sh --m="RPS" --S=28 --g=0.8 --c=200 --w=4 --T=1 --t="$STEP_DURATION" --r="$CURRENT_RPS"
+	/entrypoint.sh --m="RPS" --S=28 --g=0.8 --c=200 --w=6 --T=1 --t="$STEP_DURATION" --r="$CURRENT_RPS"
 done
