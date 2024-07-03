@@ -5,7 +5,7 @@ RECORD_COUNT=10000000
 # Tuple format cpu, memory, workload, min-rps, max-rps
 # Workload ordering based on https://github.com/brianfrankcooper/YCSB/wiki/Core-Workloads#running-the-workloads
 #           |++++++++++ #11 ++++++++++++| |++++++++++ #12 +++++++++++| |++++++++ #19 +++++++++| |+++++++ #20 ++++++++| |++++++++++ #13 +++++++++++|
-BENCHMARKS=("8 28 workloada 5000 60000" "8 28 workloadb 3000 50000" "1 28 workloadf 200 200" "1 28 workloadf 20 20" "8 28 workloadd 6000 50000")
+BENCHMARKS=("8 28 workloada 30000 100000" "8 28 workloadb 20000 70000" "1 28 workloadf 200 200" "1 28 workloadf 20 20" "8 28 workloadd 40000 90000")
 DURATION_SEC=600
 STEP_DURATION_SEC=30
 WARMUP_DURATION_SEC=120
