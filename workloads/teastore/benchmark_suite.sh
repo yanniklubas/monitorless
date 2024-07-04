@@ -74,7 +74,7 @@ echo MG_PROMETHEUS_VOLUME_NAME='"$VOLUME_NAME"' > .env
 			--user="$USER" \
 			--cmd="up"
 		YAML_FILE=$(mktemp)
-		sed -e 's/{{APPLICATION_HOST}}/'"$SERVER_IP"':8983/g' "$WORKLOAD_FILE" >"$YAML_FILE"
+		sed -e 's/{{APPLICATION_HOST}}/'"$SERVER_IP"':8080/g' "$WORKLOAD_FILE" >"$YAML_FILE"
 		YAML_PATH="$YAML_FILE" \
 			BENCHMARK_RUN="$RUN_DIR" \
 			PROFILE="$PROFILE" \
