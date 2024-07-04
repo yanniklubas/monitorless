@@ -23,7 +23,7 @@ set -euo pipefail # abort on nonzero exit status, unbound variable and don't hid
 	fi
 
 	START_TIME=$(date +%s)
-	MEASURMENTS_DIR="$HOME/test-data/teastore"
+	MEASURMENTS_DIR="$HOME/test-data/benchmark-$START_TIME/teastore"
 	mkdir -p "$MEASURMENTS_DIR"
 	VOLUME_NAME="prometheus-data-$START_TIME"
 
