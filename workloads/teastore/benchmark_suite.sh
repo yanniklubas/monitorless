@@ -30,7 +30,7 @@ set -euo pipefail # abort on nonzero exit status, unbound variable and don't hid
 	# Create docker volume if it does not exist"
 	ssh "$USER"@"$SERVER_IP" '
 docker volume create '"$VOLUME_NAME"' >/dev/null
-cd $HOME/monitorless/applications/solr
+cd $HOME/monitorless/applications/teastore
 echo MG_PROMETHEUS_VOLUME_NAME='"$VOLUME_NAME"' > .env
 '
 
@@ -104,7 +104,7 @@ docker run \
 	--user 65534:65534 \
 	busybox \
 	tar -czf /backup/metrics.tar.gz /data/
-rm $HOME/monitorless/applications/solr/.env
+rm $HOME/monitorless/applications/teastore/.env
 docker volume rm '"$VOLUME_NAME"''
 	scp "$USER"@"$SERVER_IP":/tmp/metrics.tar.gz "$MEASURMENTS_DIR/metrics.tar.gz"
 )
