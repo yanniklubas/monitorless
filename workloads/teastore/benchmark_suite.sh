@@ -8,7 +8,7 @@ set -euo pipefail # abort on nonzero exit status, unbound variable and don't hid
 	VIRTUAL_USERS=500
 	TIMEOUT_MS=3000
 	WARMUP_DURATION_SEC=120
-	WARMUP_RPS=25
+	WARMUP_RPS=10
 	WARMUP_PAUSE_SEC=10
 	LOAD_GENERATOR_LOC="$HOME/load_generator"
 
@@ -80,9 +80,8 @@ echo MG_PROMETHEUS_VOLUME_NAME='"$VOLUME_NAME"' > .env
 			printf "%s/4\n" "$ready_count"
 			if [ "$ready_count" -eq 4 ]; then
 				ready=1
-			else
-				sleep 5
 			fi
+			sleep 5
 		done
 		YAML_FILE=$(mktemp)
 		sed -e 's/{{APPLICATION_HOST}}/'"$SERVER_IP"':8080/g' "$WORKLOAD_FILE" >"$YAML_FILE"
