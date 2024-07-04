@@ -22,18 +22,10 @@ user_requests:
         - type: RANDOMINT
           text: 1,91
         - text: '&password=password'
-    post_processing_expressions:
-      - type: EXTRACTHEADER
-        text: Set-Cookie
-        store_as: session_blob
     expected_response_codes:
       - 302
   - service_name: teastore
-    method: GET
-    headers:
-      Cookie:
-        type: VARIABLE
-        text: session_blob
+    method: POST
     uri:
       type: TEMPLATE
       text: 'category?page=1&category=#RANDOMINT{(2,7)}&number=30'
@@ -41,54 +33,10 @@ user_requests:
       - 302
   - service_name: teastore
     method: GET
-    headers:
-      Cookie:
-        type: VARIABLE
-        text: session_blob
-    uri:
-      type: COMPOSITE
-      children:
-        - text: 'product?id='
-        - type: RANDOMINT
-          text: 7, 507
-          store_as: product_id
-  - service_name: teastore
-    method: POST
-    headers:
-      Cookie:
-        type: VARIABLE
-        text: session_blob
-    uri:
-      type: COMPOSITE
-      children:
-        - text: 'cartAction?addToCart=&productid='
-        - type: VARIABLE
-          text: product_id
-    expected_response_codes:
-      - 302
-  - service_name: teastore
-    headers:
-      Cookie:
-        type: VARIABLE
-        text: session_blob
-    method: GET
     uri:
       type: TEMPLATE
-      text: 'category?page=1&category=#RANDOMINT{(2,7)}'
+      text: 'product?id=#RANDOMINT{(7,507)}'
   - service_name: teastore
-    headers:
-      Cookie:
-        type: VARIABLE
-        text: session_blob
-    method: GET
-    uri:
-      type: TEMPLATE
-      text: 'category?page=2&category=#RANDOMINT{(2,7)}'
-  - service_name: teastore
-    headers:
-      Cookie:
-        type: VARIABLE
-        text: session_blob
     method: POST
     uri:
       type: TEMPLATE
@@ -97,17 +45,31 @@ user_requests:
       - 302
   - service_name: teastore
     method: GET
-    headers:
-      Cookie:
-        type: VARIABLE
-        text: session_blob
+    uri:
+      type: TEMPLATE
+      text: 'category?page=1&category=#RANDOMINT{(2,7)}'
+  - service_name: teastore
+    method: POST
+    uri:
+      type: TEMPLATE
+      text: 'category?page=1&category=#RANDOMINT{(2,7)}'
+  - service_name: teastore
+    method: POST
+    uri:
+      type: TEMPLATE
+      text: 'cartAction?addToCart=&productid=#RANDOMINT{(7,507)}'
+    expected_response_codes:
+      - 302
+  - service_name: teastore
+    method: GET
     uri:
       text: 'profile'
+    expected_response_codes:
+      - 200
+      - 201
+      - 202
+      - 302
   - service_name: teastore
-    headers:
-      Cookie:
-        type: VARIABLE
-        text: session_blob
     method: POST
     uri:
       text: 'loginAction?logout='

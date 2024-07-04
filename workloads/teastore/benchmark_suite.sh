@@ -73,6 +73,17 @@ echo MG_PROMETHEUS_VOLUME_NAME='"$VOLUME_NAME"' > .env
 			--ip="$SERVER_IP" \
 			--user="$USER" \
 			--cmd="up"
+		ready=0
+		printf "Waiting for TeaStore...\n"
+		until [ "$ready" -eq 1 ]; do
+			ready_count=$(curl --silent "$SERVER_IP:8080/tools.descartes.teastore.webui/status" | grep "OK" -c)
+			printf "%s/4\n" "$ready_count"
+			if [ "$ready_count" -eq 4 ]; then
+				ready=1
+			else
+				sleep 5
+			fi
+		done
 		YAML_FILE=$(mktemp)
 		sed -e 's/{{APPLICATION_HOST}}/'"$SERVER_IP"':8080/g' "$WORKLOAD_FILE" >"$YAML_FILE"
 		YAML_PATH="$YAML_FILE" \
