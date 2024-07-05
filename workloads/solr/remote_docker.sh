@@ -1,11 +1,5 @@
 #!/usr/bin/env bash
 
-SERVER_IP=""
-USER=""
-CPUS=""
-MEMORY=""
-DOCKER_CMD=""
-
 for opt in "$@"; do
 	case "$opt" in
 	--ip=*)
@@ -16,12 +10,16 @@ for opt in "$@"; do
 		USER="${opt#*=}"
 		shift
 		;;
-	--cpus=*)
-		CPUS="${opt#*=}"
+	--cpu-limit=*)
+		CPU_LIMIT="${opt#*=}"
 		shift
 		;;
-	--memory=*)
-		MEMORY="${opt#*=}"
+	--heap-memory=*)
+		HEAP_MEMORY="${opt#*=}"
+		shift
+		;;
+	--memory-limit=*)
+		MEMORY_LIMIT="${opt#*=}"
 		shift
 		;;
 	--cmd=*)
@@ -44,11 +42,11 @@ if [ -z "$USER" ]; then
 	printf "invalid arguments: user must be set using --user=<user>" 1>&2
 	exit 1
 fi
-if [ -z "$CPUS" ]; then
+if [ -z "$CPU_LIMIT" ]; then
 	printf "invalid arguments: cpus must be set using --cpus=<cpus>" 1>&2
 	exit 1
 fi
-if [ -z "$MEMORY" ]; then
+if [ -z "$HEAP_MEMORY" ]; then
 	printf "invalid arguments: user must be set using --memory=<memory>" 1>&2
 	exit 1
 fi
@@ -62,5 +60,5 @@ else
 fi
 
 ssh "$USER"@"$SERVER_IP" '
-cd monitorless/applications/solr
-HEAP_MEMORY='"$MEMORY"' CPUS='"$CPUS"' '"$DOCKER_CMD"' 2>/dev/null >&2'
+cd $HOME/monitorless/applications/solr
+HEAP_MEMORY='"$HEAP_MEMORY"' CPU_LIMIT='"$CPU_LIMIT"' MEMORY_LIMIT='"$MEMORY_LIMIT"' '"$DOCKER_CMD"' 2>/dev/null >&2'

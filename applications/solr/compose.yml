@@ -1,10 +1,9 @@
 services:
   solr:
     build: .
-    # network_mode: host
     restart: always
     # Heap Memory, Number of Servers
-    command: ${HEAP_MEMORY?Heap memory unset} 1
+    command: $HEAP_MEMORY 1
     environment:
       - HEAP_MEMORY=$HEAP_MEMORY
     ports:
@@ -14,7 +13,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: ${CPUS?CPUS unset}
+          cpus: $CPU_LIMIT
+          memory: $MEMORY_LIMIT
   cadvisor:
     privileged: true
     image: gcr.io/cadvisor/cadvisor:v0.47.2

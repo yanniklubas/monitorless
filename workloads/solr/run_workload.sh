@@ -6,22 +6,17 @@
 set -euo pipefail # abort on nonzero exit status, unbound variable and don't hide errors within pipes
 
 PROFILE=""
-CPUS=""
-MEMORY=""
+CPU_LIMIT=""
+HEAP_MEMORY=""
 SERVER_IP=""
-MEASUREMENTS_DIR=""
-
-# +++++++++++++++++++++++++++++
-# ++ BENCHMARK CONFIGURATION ++
-# +++++++++++++++++++++++++++++
-BENCHMARK_DURATION=""
-DIRECTOR_THREADS=""
-VIRTUAL_USER=""
+THREADS=""
+VIRTUAL_USERS=""
 TIMEOUT=""
 WARMUP_DURATION=""
 WARMUP_RPS=""
 WARMUP_PAUSE=""
 WORKLOAD_FILE=""
+SOLR_PORT=8983
 
 for opt in "$@"; do
 	case "$opt" in
@@ -29,28 +24,24 @@ for opt in "$@"; do
 		PROFILE="${opt#*=}"
 		shift
 		;;
-	--cpus=*)
-		CPUS="${opt#*=}"
+	--cpu-limit=*)
+		CPU_LIMIT="${opt#*=}"
 		shift
 		;;
-	--memory=*)
-		MEMORY="${opt#*=}"
+	--heap-memory=*)
+		HEAP_MEMORY="${opt#*=}"
 		shift
 		;;
 	--ip=*)
 		SERVER_IP="${opt#*=}"
 		shift
 		;;
-	--duration=*)
-		BENCHMARK_DURATION="${opt#*=}"
-		shift
-		;;
 	--threads=*)
-		DIRECTOR_THREADS="${opt#*=}"
+		THREADS="${opt#*=}"
 		shift
 		;;
 	--vuser=*)
-		VIRTUAL_USER="${opt#*=}"
+		VIRTUAL_USERS="${opt#*=}"
 		shift
 		;;
 	--timeout=*)
@@ -69,7 +60,7 @@ for opt in "$@"; do
 		WARMUP_PAUSE="${opt#*=}"
 		shift
 		;;
-	--workload=*)
+	--workload-file=*)
 		WORKLOAD_FILE="${opt#*=}"
 		shift
 		;;
@@ -89,27 +80,23 @@ if [ -z "$PROFILE" ]; then
 	printf "invalid arguments: profile must be set using --profile=<profile>\n" 1>&2
 	exit 1
 fi
-if [ -z "$CPUS" ]; then
-	printf "invalid arguments: cpus must be set using --cpus=<cpus>\n" 1>&2
+if [ -z "$CPU_LIMIT" ]; then
+	printf "invalid arguments: cpu limit must be set using --cpu-limit=<cpus>\n" 1>&2
 	exit 1
 fi
-if [ -z "$MEMORY" ]; then
-	printf "invalid arguments: memory must be set using --memory=<memory>\n" 1>&2
+if [ -z "$HEAP_MEMORY" ]; then
+	printf "invalid arguments: heap memory must be set using --heap-memory=<memory>\n" 1>&2
 	exit 1
 fi
 if [ -z "$SERVER_IP" ]; then
 	printf "invalid arguments: server ip must be set using --ip=<ip>\n" 1>&2
 	exit 1
 fi
-if [ -z "$BENCHMARK_DURATION" ]; then
-	printf "invalid arguments: benchmark duration must be set using --duration=<duration>\n" 1>&2
+if [ -z "$THREADS" ]; then
+	printf "invalid arguments: threads must be set using --threads=<threads>\n" 1>&2
 	exit 1
 fi
-if [ -z "$DIRECTOR_THREADS" ]; then
-	printf "invalid arguments: director threads must be set using --threads=<threads>\n" 1>&2
-	exit 1
-fi
-if [ -z "$VIRTUAL_USER" ]; then
+if [ -z "$VIRTUAL_USERS" ]; then
 	printf "invalid arguments: virtual users must be set using --vuser=<vuser>\n" 1>&2
 	exit 1
 fi
@@ -133,6 +120,12 @@ if [ -z "$WORKLOAD_FILE" ]; then
 	printf "invalid arguments: workload must be set using --workload=<file>\n" 1>&2
 	exit 1
 fi
+if [ -z "$MEASUREMENTS_DIR" ]; then
+	printf "invalid arguments: measurements direcotry must be set using --measurements=<path>\n" 1>&2
+	exit 1
+fi
+
+exit
 
 # +++++++++++++++++++
 (
@@ -140,7 +133,7 @@ fi
 	SCRIPT_PATH=$(readlink -f -- "${SCRIPT_PATH}")
 	cd "${SCRIPT_PATH}"
 
-	DIR_NAME="cpu-$CPUS-memory-$MEMORY-duration-$BENCHMARK_DURATION"
+	DIR_NAME="cpu-$CPU_LIMIT-memory-$HEAP_MEMORY-duration-$BENCHMARK_DURATION"
 	RUN_DIR="$MEASUREMENTS_DIR/$DIR_NAME"
 
 	if [ -d "$RUN_DIR" ]; then
@@ -154,14 +147,16 @@ fi
 	CONFIG_FILE="$RUN_DIR/config.yml"
 	printf "Saving benchmark configuration to %s\n" "$CONFIG_FILE" 1>&2
 	touch "$CONFIG_FILE"
+	BENCHMARK_DURATION=$(wc -l <"$PROFILE")
+	BENCHMARK_DURATION=$(echo "$BENCHMARK_DURATION" | xargs)
 	printf "profile: %s\n" "$PROFILE" >"$CONFIG_FILE"
 	{
-		printf "cpus: %d\n" "$CPUS"
-		printf "memory: %s\n" "$MEMORY"
+		printf "cpus: %d\n" "$CPU_LIMIT"
+		printf "memory: %s\n" "$HEAP_MEMORY"
 		printf "server_ip: %s\n" "$SERVER_IP"
 		printf "duration: %d\n" "$BENCHMARK_DURATION"
-		printf "threads: %d\n" "$DIRECTOR_THREADS"
-		printf "virtual_users: %d\n" "$VIRTUAL_USER"
+		printf "threads: %d\n" "$THREADS"
+		printf "virtual_users: %d\n" "$VIRTUAL_USERS"
 		printf "timeout: %d\n" "$TIMEOUT"
 		printf "warmup_duration: %d\n" "$WARMUP_DURATION"
 		printf "warmup_rps: %d\n" "$WARMUP_RPS"
@@ -170,23 +165,28 @@ fi
 	} >>"$CONFIG_FILE"
 
 	printf "Starting Solr server on %s\n" "$SERVER_IP"
+
+	MEMORY_LIMIT="$((HEAP_MEMORY + 4))GB"
+	HEAP_MEMORY="${HEAP_MEMORY}G"
+
 	bash remote_docker.sh \
 		--ip="$SERVER_IP" \
 		--user="$USER" \
-		--cpus="$CPUS" \
-		--memory="$MEMORY" \
+		--cpu-limit="$CPU_LIMIT" \
+		--memory-limit="$MEMORY_LIMIT" \
+		--heap-memory="$HEAP_MEMORY" \
 		--cmd="up"
 
 	printf "Waiting on Solr server.\n"
 	bash query.sh "$SERVER_IP"
-	YAML_FILE="$PWD/parsed.yml"
-	sed -e 's/{{APPLICATION_HOST}}/'"$SERVER_IP"':8983/g' "$WORKLOAD_FILE" >"$YAML_FILE"
+	YAML_FILE=$(mktemp)
+	sed -e 's/{{APPLICATION_HOST}}/'"$SERVER_IP"':'"$SOLR_PORT"'/g' "$WORKLOAD_FILE" >"$YAML_FILE"
 	YAML_PATH="$YAML_FILE" \
 		BENCHMARK_RUN="$RUN_DIR" \
 		PROFILE="$PROFILE" \
 		BENCHMARK_DURATION="$BENCHMARK_DURATION" \
-		DIRECTOR_THREADS="$DIRECTOR_THREADS" \
-		VIRTUAL_USERS="$VIRTUAL_USER" \
+		DIRECTOR_THREADS="$THREADS" \
+		VIRTUAL_USERS="$VIRTUAL_USERS" \
 		TIMEOUT="$TIMEOUT" \
 		WARMUP_DURATION="$WARMUP_DURATION" \
 		WARMUP_RPS="$WARMUP_RPS" \
@@ -197,8 +197,9 @@ fi
 	bash remote_docker.sh \
 		--ip="$SERVER_IP" \
 		--user="$USER" \
-		--cpus="$CPUS" \
-		--memory="$MEMORY" \
+		--cpu-limit="$CPU_LIMIT" \
+		--memory-limit="$MEMORY_LIMIT" \
+		--heap-memory="$HEAP_MEMORY" \
 		--cmd="down"
 	rm "$YAML_FILE"
 )
