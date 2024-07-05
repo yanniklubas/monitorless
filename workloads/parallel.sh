@@ -1,19 +1,18 @@
 #!/usr/bin/env bash
 set -eou pipefail
 
-SERVER_IP="10.128.0.5"
-# Tuple format
-# Solr: Number, CPU, Memory, Profile
-# Cassandra: Number, CPU, Memory, Workload, Min-RPS, Max-RPS
-# Memcached: Number, CPU, Memory, Min-RPS, Max-RPS
+# Format:
+# Solr: NUMBER, CPU_LIMIT, HEAP_MEMORY, PROFILE
+# Cassandra: NUMBER, CPU_LIMIT, HEAP_MEMORY, WORKLOAD, MINIMUM-RPS, MAXIMUM-RPS
+# Memcached: NUMBER, CPU_LIMIT, SERVER_MEMORY, MINIMUM-RPS, MAXIMUM-RPS
 BENCHMARKS=(
-	"solr 3 8 8g sinnoise1000.csv"            # 3
+	"solr 3 8 8 sinnoise1000.csv"             # 3
 	"cassandra 14 6 28 workloada 15000 25000" # 14
-	"solr 4 8 8g sinnoise1000.csv"            # 4
+	"solr 4 8 8 sinnoise1000.csv"             # 4
 	"cassandra 15 6 28 workloadb 10000 15000" # 15
-	"solr 5 3 8g sinnoise1000.csv"            # 5
+	"solr 5 3 8 sinnoise1000.csv"             # 5
 	"cassandra 16 6 28 workloadd 10000 25000" # 16
-	"solr 6 1.5 8g sinnoise1000.csv"          # 6
+	"solr 6 1.5 8 sinnoise1000.csv"           # 6
 	"cassandra 17 6 28 workloadb 5000 20000"  # 17
 	"memcached 10 8 4096 10000 65000"         # 10
 	"cassandra 18 6 28 workloadb 10000 10000" # 18
@@ -26,16 +25,34 @@ WARMUP_RPS=25
 WARMUP_PAUSE_SEC=10
 LOAD_GENERATOR_LOC="$HOME/load_generator"
 SEED="1"
-RECORD_COUNT="10000000"
+RECORD_COUNT="20000000"
 STEP_DURATION="30"
-PORT=11211
-
+MEMCACHED_PORT=11211
+SOLR_PORT=8983
 #+++++++++++++++++++++++++++
 #++++ CONFIGURATION END ++++
 #+++++++++++++++++++++++++++
+MEASUREMENTS_DIR="$1"
+SERVER_IP="$2"
+
+print_usage() {
+	printf "Usage: %s DIR IP
+    DIR - The directory used for saving the measurements
+    IP  - The IP of the Solr server
+" "$0" >&2
+}
+
+if [ -z "$MEASUREMENTS_DIR" ]; then
+	print_usage
+	exit 1
+fi
+if [ -z "$SERVER_IP" ]; then
+	print_usage
+	exit 1
+fi
 
 # Download dataset if the web_search_data container does not exist
-printf "Checking for solr dataset...\n" >&2
+printf "Checking for Solr dataset...\n" >&2
 ssh "$USER"@"$SERVER_IP" '[ ! "$(docker ps -a | grep "web_search_dataset")" ] && docker run --name web_search_dataset cloudsuite/web-search:dataset || exit 0'
 
 # Copy load generator .jar, if not exists
@@ -52,13 +69,11 @@ fi
 printf "Creating volumes...\n" >&2
 
 START_TIME=$(date +%s)
-MEASURMENTS_DIR="$1"
-mkdir -p "$MEASURMENTS_DIR"
+mkdir -p "$MEASUREMENTS_DIR"
 SOLR_VOLUME_NAME="solr-prometheus-data-$START_TIME"
 CASSANDRA_VOLUME_NAME="cassandra-prometheus-data-$START_TIME"
 MEMCACHED_VOLUME_NAME="memcached-prometheus-data-$START_TIME"
 
-# Create docker volume if it does not exist"
 ssh "$USER"@"$SERVER_IP" '
 docker volume create '"$SOLR_VOLUME_NAME"' >/dev/null
 docker volume create '"$MEMCACHED_VOLUME_NAME"' >/dev/null
@@ -75,15 +90,54 @@ printf "Created volumes!\n" >&2
 
 remote_docker() {
 	local file="$1/remote_docker.sh"
-	local cpus="$2"
-	local memory="$3"
-	local cmd="$4"
-	bash "$file" \
-		--ip="$SERVER_IP" \
-		--user="$USER" \
-		--cpus="$cpus" \
-		--memory="$memory" \
-		--cmd="$cmd"
+	local cpu_limit="$2"
+	local memory_limit="$3"
+	local memory="$4"
+	local cmd="$5"
+	case "$1" in
+	"solr")
+		bash "$file" \
+			--ip="$SERVER_IP" \
+			--user="$USER" \
+			--cpu-limit="$cpu_limit" \
+			--memory-limit="$memory_limit" \
+			--heap-memory="${memory}g" \
+			--cmd="$cmd"
+		;;
+	"cassandra")
+		local services="$6"
+		bash "$file" \
+			--ip="$SERVER_IP" \
+			--user="$USER" \
+			--cpu-limit="$cpu_limit" \
+			--memory-limit="$memory_limit" \
+			--heap-memory="$memory" \
+			--services="$services" \
+			--cmd="$cmd"
+		;;
+	"memcached")
+		bash "$file" \
+			--ip="$SERVER_IP" \
+			--user="$USER" \
+			--cpu-limit="$cpu_limit" \
+			--memory-limit="$memory_limit" \
+			--server-memory="$memory" \
+			--cmd="$cmd"
+		;;
+	esac
+}
+
+get_memory_limit() {
+	local name="$1"
+	local memory="$2"
+	case "$name" in
+	"solr" | "cassandra")
+		printf "%s" "$((memory + 4))GB"
+		;;
+	"memcached")
+		printf "%s" "$((memory + 1024))MB"
+		;;
+	esac
 }
 
 warmup() {
@@ -94,14 +148,13 @@ warmup() {
 			cd "solr"
 			bash query.sh "$SERVER_IP"
 			WORKLOAD_FILE="$PWD/workload.yml"
-			YAML_FILE="$PWD/parsed.yml"
+			YAML_FILE=$(mktemp)
+			BENCHMARK_RUN=$(mktemp -d)
 			sed -e 's/{{APPLICATION_HOST}}/'"$SERVER_IP"':8983/g' "$WORKLOAD_FILE" >"$YAML_FILE"
-			# TODO
 			YAML_PATH="$YAML_FILE" \
-				BENCHMARK_RUN="/tmp" \
+				BENCHMARK_RUN="$BENCHMARK_RUN" \
 				PROFILE="$PWD/noop.csv" \
-				BENCHMARK_DURATION="0" \
-				DIRECTOR_THREADS="256" \
+				THREADS="256" \
 				VIRTUAL_USERS="$VIRTUAL_USERS" \
 				TIMEOUT="$TIMEOUT_MS" \
 				WARMUP_DURATION="$WARMUP_DURATION_SEC" \
@@ -115,14 +168,6 @@ warmup() {
 	"cassandra")
 		(
 			cd "cassandra"
-			if [ "$SEED" -eq 1 ]; then
-				printf "Seeding cassandra...\n" >&2
-				DO_SEED=1 \
-					WORKLOAD="workloada" \
-					SERVER_IP="$SERVER_IP" \
-					RECORD_COUNT="$RECORD_COUNT" \
-					docker compose up --force-recreate --build
-			fi
 			DO_SEED=0 \
 				SERVER_IP="$SERVER_IP" \
 				RECORD_COUNT="$RECORD_COUNT" \
@@ -141,9 +186,10 @@ warmup() {
 	"memcached")
 		(
 			cd "memcached"
-			local servers_file="$PWD/tmp_servers.txt"
+			local servers_file
+			servers_file=$(mktemp)
 			local memory="$2"
-			printf "%s, %s\n" "$SERVER_IP" "$PORT" >"$servers_file"
+			printf "%s, %s\n" "$SERVER_IP" "$MEMCACHED_PORT" >"$servers_file"
 			SERVERS_FILE="$servers_file" \
 				SERVER_MEMORY="$memory" \
 				MINIMUM_RPS="0" \
@@ -229,8 +275,8 @@ start_workload() {
 			cd "solr"
 			local profile="$PWD/$3"
 			WORKLOAD_FILE="$PWD/workload.yml"
-			YAML_FILE="$PWD/parsed.yml"
-			sed -e 's/{{APPLICATION_HOST}}/'"$SERVER_IP"':8983/g' "$WORKLOAD_FILE" >"$YAML_FILE"
+			YAML_FILE=$(mktemp)
+			sed -e 's/{{APPLICATION_HOST}}/'"$SERVER_IP"':'"$SOLR_PORT"'/g' "$WORKLOAD_FILE" >"$YAML_FILE"
 			YAML_PATH="$YAML_FILE" \
 				BENCHMARK_RUN="$run_dir" \
 				PROFILE="$profile" \
@@ -285,8 +331,9 @@ start_workload() {
 			local min_rps="$3"
 			local max_rps="$4"
 			local memory="$5"
-			local servers_file="$PWD/tmp_servers.txt"
-			printf "%s, %s\n" "$SERVER_IP" "$PORT" >"$servers_file"
+			local servers_file
+			servers_file=$(mktemp)
+			printf "%s, %s\n" "$SERVER_IP" "$MEMCACHED_PORT" >"$servers_file"
 			SERVERS_FILE="$servers_file" \
 				SERVER_MEMORY="$memory" \
 				MINIMUM_RPS="$min_rps" \
@@ -314,24 +361,40 @@ for ((i = 0; i < ${#BENCHMARKS[@]}; i += 2)); do
 	t="${BENCHMARKS[i]}"
 	oIFS="$IFS"
 	IFS=' '
-	read -ra RUN_1 <<<"$t"
-	NAME_1="${RUN_1[0]}"
-	NUMBER_1="${RUN_1[1]}"
-	CPU_1="${RUN_1[2]}"
-	MEMORY_1="${RUN_1[3]}"
+	read -ra CONFIG_1 <<<"$t"
+	NAME_1="${CONFIG_1[0]}"
+	NUMBER_1="${CONFIG_1[1]}"
+	CPU_LIMIT_1="${CONFIG_1[2]}"
+	MEMORY_1="${CONFIG_1[3]}"
+	MEMORY_LIMIT_1=$(get_memory_limit "$NAME_1" "$MEMORY_1")
 	t="${BENCHMARKS[i + 1]}"
-	read -ra RUN_2 <<<"$t"
-	NAME_2="${RUN_2[0]}"
-	NUMBER_2="${RUN_2[1]}"
-	CPU_2="${RUN_2[2]}"
-	MEMORY_2="${RUN_2[3]}"
+	read -ra CONFIG_2 <<<"$t"
+	NAME_2="${CONFIG_2[0]}"
+	NUMBER_2="${CONFIG_2[1]}"
+	CPU_LIMIT_2="${CONFIG_2[2]}"
+	MEMORY_2="${CONFIG_2[3]}"
+	MEMORY_LIMIT_2=$(get_memory_limit "$NAME_2" "$MEMORY_2")
 	IFS="$oIFS"
 	unset oIFS
 
-	printf "Starting %s with %s CPUS and %s Memory...\n" "$NAME_1" "$CPU_1" "$MEMORY_1" >&2
-	remote_docker "$NAME_1" "$CPU_1" "$MEMORY_1" "up"
-	printf "Starting %s with %s CPUS and %s Memory...\n" "$NAME_2" "$CPU_2" "$MEMORY_2" >&2
-	remote_docker "$NAME_2" "$CPU_2" "$MEMORY_2" "up"
+	if [ "$NAME_1" = "cassandra" ] || [ "$NAME_2" = "cassandra" ]; then
+		if [ "$SEED" -eq 1 ]; then
+			cd "cassandra"
+			printf "Seeding cassandra...\n" >&2
+			DO_SEED=1 \
+				WORKLOAD="workloada" \
+				SERVER_IP="$SERVER_IP" \
+				RECORD_COUNT="$RECORD_COUNT" \
+				docker compose up --force-recreate --build
+			SEED=0
+			cd ".."
+		fi
+	fi
+
+	printf "Starting %s with %s CPUS and %s Memory...\n" "$NAME_1" "$CPU_LIMIT_1" "$MEMORY_1" >&2
+	remote_docker "$NAME_1" "$CPU_LIMIT_1" "$MEMORY_LIMIT_1" "$MEMORY_1" "up"
+	printf "Starting %s with %s CPUS and %s Memory...\n" "$NAME_2" "$CPU_LIMIT_2" "$MEMORY_2" >&2
+	remote_docker "$NAME_2" "$CPU_LIMIT_2" "$MEMORY_LIMIT_2" "$MEMORY_2" "up"
 
 	pids=()
 	printf "Starting warmup for %s...\n" "$NAME_1" >&2
@@ -340,31 +403,24 @@ for ((i = 0; i < ${#BENCHMARKS[@]}; i += 2)); do
 	printf "Starting warmup for %s...\n" "$NAME_2" >&2
 	warmup "$NAME_2" "$MEMORY_2" &
 	pids+=("$!")
-
 	for pid in "${pids[@]}"; do
 		wait "$pid"
 	done
 
-	if [ "$NAME_1" = "cassandra" ]; then
-		SEED=0
-	elif [ "$NAME_2" = "cassandra" ]; then
-		SEED=0
-	fi
-
 	run_pids=()
-	RUN_DIR_1="$MEASURMENTS_DIR/$NAME_1-$NUMBER_1"
+	RUN_DIR_1="$MEASUREMENTS_DIR/$NAME_1-$NUMBER_1"
 	mkdir -p "$RUN_DIR_1"
-	RUN_DIR_2="$MEASURMENTS_DIR/$NAME_2-$NUMBER_2"
+	RUN_DIR_2="$MEASUREMENTS_DIR/$NAME_2-$NUMBER_2"
 	mkdir -p "$RUN_DIR_2"
 	printf "Saving config for %s\n" "$NAME_1" >&2
-	save_config "$RUN_DIR_1" "${RUN_1[@]}"
+	save_config "$RUN_DIR_1" "${CONFIG_1[@]}"
 	printf "Saving config for %s\n" "$NAME_2" >&2
-	save_config "$RUN_DIR_2" "${RUN_2[@]}"
+	save_config "$RUN_DIR_2" "${CONFIG_2[@]}"
 	printf "Starting workload for %s\n" "$NAME_1" >&2
-	start_workload "$NAME_1" "$RUN_DIR_1" "${RUN_1[@]:4}" "$MEMORY_1" &
+	start_workload "$NAME_1" "$RUN_DIR_1" "${CONFIG_1[@]:4}" "$MEMORY_1" &
 	run_pids+=("$!")
 	printf "Starting workload for %s\n" "$NAME_2" >&2
-	start_workload "$NAME_2" "$RUN_DIR_2" "${RUN_2[@]:4}" "$MEMORY_2" &
+	start_workload "$NAME_2" "$RUN_DIR_2" "${CONFIG_2[@]:4}" "$MEMORY_2" &
 	run_pids+=("$!")
 
 	for pid in "${run_pids[@]}"; do
@@ -373,9 +429,9 @@ for ((i = 0; i < ${#BENCHMARKS[@]}; i += 2)); do
 	done
 
 	printf "Stopping application %s\n" "$NAME_1" >&2
-	remote_docker "$NAME_1" "$CPU_1" "$MEMORY_1" "down"
+	remote_docker "$NAME_1" "$CPU_LIMIT_1" "$MEMORY_LIMIT_1" "$MEMORY_1" "down"
 	printf "Stopping application %s\n" "$NAME_2" >&2
-	remote_docker "$NAME_2" "$CPU_2" "$MEMORY_2" "down"
+	remote_docker "$NAME_2" "$CPU_LIMIT_2" "$MEMORY_LIMIT_2" "$MEMORY_2" "down"
 done
 
 ssh "$USER"@"$SERVER_IP" 'rm /tmp/solr_metrics.tar.gz 2>/dev/null
@@ -410,6 +466,6 @@ CPUS=1 docker compose down -v
 docker volume rm '"$SOLR_VOLUME_NAME"'
 docker volume rm '"$CASSANDRA_VOLUME_NAME"'
 docker volume rm '"$MEMCACHED_VOLUME_NAME"''
-scp "$USER"@"$SERVER_IP":/tmp/solr_metrics.tar.gz "$MEASURMENTS_DIR/solr_metrics.tar.gz"
-scp "$USER"@"$SERVER_IP":/tmp/cassandra_metrics.tar.gz "$MEASURMENTS_DIR/cassandra_metrics.tar.gz"
-scp "$USER"@"$SERVER_IP":/tmp/memcached_metrics.tar.gz "$MEASURMENTS_DIR/memcached_metrics.tar.gz"
+scp "$USER"@"$SERVER_IP":/tmp/solr_metrics.tar.gz "$MEASUREMENTS_DIR/solr_metrics.tar.gz"
+scp "$USER"@"$SERVER_IP":/tmp/cassandra_metrics.tar.gz "$MEASUREMENTS_DIR/cassandra_metrics.tar.gz"
+scp "$USER"@"$SERVER_IP":/tmp/memcached_metrics.tar.gz "$MEASUREMENTS_DIR/memcached_metrics.tar.gz"

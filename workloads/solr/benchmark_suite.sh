@@ -4,7 +4,7 @@ set -euo pipefail
 # Format: CPU_LIMIT (in cores), HEAP_MEMORY (in GB), PROFILE
 # MEMORY_LIMIT := HEAP_MEMORY + 4GB
 BENCHMARKS=("3 14 sin1000.csv" "8 14 sin1000.csv" "3 8 sin1000.csv" "3 32 sin1000.csv")
-VIRTUAL_USERS=500
+VIRTUAL_USERS=3000
 TIMEOUT_MS=3000
 WARMUP_DURATION_SEC=120
 WARMUP_RPS=25
@@ -27,7 +27,7 @@ if [ -z "$MEASURMENTS_DIR" ]; then
 	print_usage
 	exit 1
 fi
-if [ -z "$IP" ]; then
+if [ -z "$SERVER_IP" ]; then
 	print_usage
 	exit 1
 fi

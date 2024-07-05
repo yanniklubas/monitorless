@@ -24,7 +24,7 @@ if [ -z "$MEASURMENTS_DIR" ]; then
 	print_usage
 	exit 1
 fi
-if [ -z "$IP" ]; then
+if [ -z "$SERVER_IP" ]; then
 	print_usage
 	exit 1
 fi
