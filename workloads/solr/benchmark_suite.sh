@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
 # Format: CPU_LIMIT (in cores), HEAP_MEMORY (in GB), PROFILE
 # MEMORY_LIMIT := HEAP_MEMORY + 4GB
