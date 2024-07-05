@@ -46,17 +46,17 @@ parse_config() {
 
 	(
 		cd solr
-		bash benchmark_suite.sh "$MEASUREMENTS_DIR/solr" 2>&1 | tee "solr.log"
+		bash benchmark_suite.sh "$MEASUREMENTS_DIR/solr" "$SERVER_IP" 2>&1 | tee "solr.log"
 	)
 	(
 		cd memcached
-		bash benchmark_suite.sh "$MEASUREMENTS_DIR/memcached" 2>&1 | tee "memcached.log"
+		bash benchmark_suite.sh "$MEASUREMENTS_DIR/memcached" "$SERVER_IP" 2>&1 | tee "memcached.log"
 	)
 	(
 		cd cassandra
-		bash benchmark_suite.sh "$MEASUREMENTS_DIR/cassandra" 2>&1 | tee "cassandra.log"
+		bash benchmark_suite.sh "$MEASUREMENTS_DIR/cassandra" "$SERVER_IP" 2>&1 | tee "cassandra.log"
 	)
 	(
-		bash parallel.sh "$MEASUREMENTS_DIR/parallel" 2>&1 | tee "parallel.log"
+		bash parallel.sh "$MEASUREMENTS_DIR/parallel" "$SERVER_IP" 2>&1 | tee "parallel.log"
 	)
 )
