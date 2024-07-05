@@ -1,22 +1,14 @@
 #!/usr/bin/env bash
-# +++++++++++++++++++
-# ++ CONFIGURATION ++
-# +++++++++++++++++++
-
-set -euo pipefail # abort on nonzero exit status, unbound variable and don't hide errors within pipes
+set -euo pipefail
 
 # One of: workloada, workloadb, workloadc, workloadd, workloade, workloadf
 WORKLOAD=""
 RECORD_COUNT=""
-CPUS=""
-MEMORY=""
+CPU_LIMIT=""
+HEAP_MEMORY=""
 SERVER_IP=""
 DO_SEED=0
 MEASUREMENTS_DIR=""
-
-# +++++++++++++++++++++++++++++
-# ++ BENCHMARK CONFIGURATION ++
-# +++++++++++++++++++++++++++++
 BENCHMARK_DURATION=""
 WARMUP_DURATION=""
 WARMUP_RPS=""
@@ -39,12 +31,12 @@ for opt in "$@"; do
 		DO_SEED=1
 		shift
 		;;
-	--cpus=*)
-		CPUS="${opt#*=}"
+	--cpu-limit=*)
+		CPU_LIMIT="${opt#*=}"
 		shift
 		;;
-	--memory=*)
-		MEMORY="${opt#*=}"
+	--heap-memory=*)
+		HEAP_MEMORY="${opt#*=}"
 		shift
 		;;
 	--ip=*)
@@ -98,16 +90,16 @@ if [ -z "$RECORD_COUNT" ]; then
 	printf "invalid arguments: record count must be set using --records=<count>\n" 1>&2
 	exit 1
 fi
-if [ -z "$MEMORY" ]; then
-	printf "invalid arguments: memory must be set using --memory=<memory>\n" 1>&2
+if [ -z "$HEAP_MEMORY" ]; then
+	printf "invalid arguments: heap memory must be set using --heap-memory=<memory>\n" 1>&2
 	exit 1
 fi
 if [ -z "$WORKLOAD" ]; then
 	printf "invalid arguments: workload must be set using --workload=<workload>\n" 1>&2
 	exit 1
 fi
-if [ -z "$CPUS" ]; then
-	printf "invalid arguments: cpus must be set using --cpus=<cpus>\n" 1>&2
+if [ -z "$CPU_LIMIT" ]; then
+	printf "invalid arguments: cpu limit must be set using --cpu-limit=<limit>\n" 1>&2
 	exit 1
 fi
 if [ -z "$MEASUREMENTS_DIR" ]; then
@@ -148,13 +140,17 @@ fi
 	SCRIPT_PATH=$(dirname -- "${BASH_SOURCE[0]}")
 	SCRIPT_PATH=$(readlink -f -- "${SCRIPT_PATH}")
 	cd "${SCRIPT_PATH}"
+
+	MEMORY_LIMIT="$((HEAP_MEMORY + 4))GB"
+
 	if [ "$DO_SEED" -eq 1 ]; then
 		printf "Starting seeding the database with %s\n" "$WORKLOAD"
 		bash remote_docker.sh \
 			--ip="$SERVER_IP" \
 			--user="$USER" \
-			--cpus="$CPUS" \
-			--memory="$MEMORY" \
+			--cpu-limit="$CPU_LIMIT" \
+			--memory-limit="$MEMORY_LIMIT" \
+			--heap-memory="$HEAP_MEMORY" \
 			--cmd="up" \
 			--services="cassandra"
 
@@ -167,12 +163,13 @@ fi
 		bash remote_docker.sh \
 			--ip="$SERVER_IP" \
 			--user="$USER" \
-			--cpus="$CPUS" \
-			--memory="$MEMORY" \
+			--cpu-limit="$CPU_LIMIT" \
+			--memory-limit="$MEMORY_LIMIT" \
+			--heap-memory="$HEAP_MEMORY" \
 			--cmd="down"
 	fi
 
-	DIR_NAME="cpu-$CPUS-memory-$MEMORY-duration-$BENCHMARK_DURATION-$WORKLOAD"
+	DIR_NAME="cpu-$CPU_LIMIT-memory-$HEAP_MEMORY-duration-$BENCHMARK_DURATION-$WORKLOAD"
 	RUN_DIR="$MEASUREMENTS_DIR/$DIR_NAME"
 
 	if [ -d "$RUN_DIR" ]; then
@@ -188,8 +185,8 @@ fi
 	touch "$CONFIG_FILE"
 	printf "workload: %s\n" "$WORKLOAD" >"$CONFIG_FILE"
 	{
-		printf "cpus: %d\n" "$CPUS"
-		printf "memory: %s\n" "$MEMORY"
+		printf "cpus: %d\n" "$CPU_LIMIT"
+		printf "memory: %s\n" "$HEAP_MEMORY"
 		printf "server_ip: %s\n" "$SERVER_IP"
 		printf "duration: %d\n" "$BENCHMARK_DURATION"
 		printf "warmup_duration: %d\n" "$WARMUP_DURATION"
@@ -204,8 +201,9 @@ fi
 	bash remote_docker.sh \
 		--ip="$SERVER_IP" \
 		--user="$USER" \
-		--cpus="$CPUS" \
-		--memory="$MEMORY" \
+		--cpu-limit="$CPU_LIMIT" \
+		--memory-limit="$MEMORY_LIMIT" \
+		--heap-memory="$HEAP_MEMORY" \
 		--cmd="up"
 
 	WAIT=10
@@ -242,7 +240,8 @@ fi
 	bash remote_docker.sh \
 		--ip="$SERVER_IP" \
 		--user="$USER" \
-		--cpus="$CPUS" \
-		--memory="$MEMORY" \
+		--cpu-limit="$CPU_LIMIT" \
+		--memory-limit="$MEMORY_LIMIT" \
+		--heap-memory="$HEAP_MEMORY" \
 		--cmd="down"
 )

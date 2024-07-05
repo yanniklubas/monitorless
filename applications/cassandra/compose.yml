@@ -9,7 +9,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: $CPUS
+          cpus: $CPU_LIMIT
+          memory: $MEMORY_LIMIT
   cadvisor:
     privileged: true
     image: gcr.io/cadvisor/cadvisor:v0.47.2
