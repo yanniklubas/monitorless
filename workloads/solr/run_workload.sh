@@ -131,6 +131,8 @@ fi
 	SCRIPT_PATH=$(readlink -f -- "${SCRIPT_PATH}")
 	cd "${SCRIPT_PATH}"
 
+	BENCHMARK_DURATION=$(wc -l <"$PROFILE")
+	BENCHMARK_DURATION=$(echo "$BENCHMARK_DURATION" | xargs)
 	DIR_NAME="cpu-$CPU_LIMIT-memory-$HEAP_MEMORY-duration-$BENCHMARK_DURATION"
 	RUN_DIR="$MEASUREMENTS_DIR/$DIR_NAME"
 
@@ -145,8 +147,6 @@ fi
 	CONFIG_FILE="$RUN_DIR/config.yml"
 	printf "Saving benchmark configuration to %s\n" "$CONFIG_FILE" 1>&2
 	touch "$CONFIG_FILE"
-	BENCHMARK_DURATION=$(wc -l <"$PROFILE")
-	BENCHMARK_DURATION=$(echo "$BENCHMARK_DURATION" | xargs)
 	printf "profile: %s\n" "$PROFILE" >"$CONFIG_FILE"
 	{
 		printf "cpus: %d\n" "$CPU_LIMIT"

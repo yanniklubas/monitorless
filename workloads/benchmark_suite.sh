@@ -39,7 +39,6 @@ parse_config() {
 	SCRIPT_PATH=$(readlink -f -- "${SCRIPT_PATH}")
 	cd "${SCRIPT_PATH}" || exit 1
 	parse_config "config.conf"
-	echo "$SERVER_IP"
 
 	START_TIME=$(date +%s)
 	MEASUREMENTS_DIR="$HOME/measurements/benchmark-$START_TIME"
