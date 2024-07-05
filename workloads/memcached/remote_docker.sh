@@ -2,8 +2,9 @@
 
 SERVER_IP=""
 USER=""
-CPUS=""
-MEMORY=""
+CPU_LIMIT=""
+MEMORY_LIMIT=""
+SERVER_MEMORY=""
 DOCKER_CMD=""
 
 for opt in "$@"; do
@@ -16,12 +17,16 @@ for opt in "$@"; do
 		USER="${opt#*=}"
 		shift
 		;;
-	--cpus=*)
-		CPUS="${opt#*=}"
+	--cpu-limit=*)
+		CPU_LIMIT="${opt#*=}"
 		shift
 		;;
-	--memory=*)
-		MEMORY="${opt#*=}"
+	--memory-limit=*)
+		MEMORY_LIMIT="${opt#*=}"
+		shift
+		;;
+	--server-memory=*)
+		SERVER_MEMORY="${opt#*=}"
 		shift
 		;;
 	--cmd=*)
@@ -44,11 +49,15 @@ if [ -z "$USER" ]; then
 	printf "invalid arguments: user must be set using --user=<user>\n" 1>&2
 	exit 1
 fi
-if [ -z "$CPUS" ]; then
-	printf "invalid arguments: cpus must be set using --cpus=<cpus>\n" 1>&2
+if [ -z "$CPU_LIMIT" ]; then
+	printf "invalid arguments: cpu limit must be set using --cpu-limit=<limit>\n" 1>&2
 	exit 1
 fi
-if [ -z "$MEMORY" ]; then
+if [ -z "$MEMORY_LIMIT" ]; then
+	printf "invalid arguments: memory limit must be set using --memory-limit=<limit>\n" 1>&2
+	exit 1
+fi
+if [ -z "$SERVER_MEMORY" ]; then
 	printf "invalid arguments: user must be set using --memory=<memory>\n" 1>&2
 	exit 1
 fi
@@ -63,4 +72,4 @@ fi
 
 ssh "$USER"@"$SERVER_IP" '
 cd $HOME/monitorless/applications/memcached
-SERVER_MEMORY='"$MEMORY"' CPUS='"$CPUS"' '"$DOCKER_CMD"' 2>/dev/null >&2'
+SERVER_MEMORY='"$SERVER_MEMORY"' CPU_LIMIT='"$CPU_LIMIT"' MEMORY_LIMIT='"$MEMORY_LIMIT"' '"$DOCKER_CMD"' 2>/dev/null >&2'

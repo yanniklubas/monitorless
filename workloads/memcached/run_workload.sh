@@ -6,20 +6,20 @@ BENCHMARK_DURATION=""
 MINIMUM_RPS=""
 MAXIMUM_RPS=""
 STEP_DURATION=""
-CPUS=""
-MEMORY=""
+CPU_LIMIT=""
+SERVER_MEMORY=""
 SERVER_IP=""
-PORT=11211
 MEASUREMENTS_DIR=""
+MEMCACHED_PORT=11211
 
 for opt in "$@"; do
 	case "$opt" in
-	--cpus=*)
-		CPUS="${opt#*=}"
+	--cpu-limit=*)
+		CPU_LIMIT="${opt#*=}"
 		shift
 		;;
-	--memory=*)
-		MEMORY="${opt#*=}"
+	--server-memory=*)
+		SERVER_MEMORY="${opt#*=}"
 		shift
 		;;
 	--ip=*)
@@ -58,12 +58,12 @@ if [ -z "$SERVER_IP" ]; then
 	printf "invalid arguments: server ip must be set using --ip=<ip>\n" 1>&2
 	exit 1
 fi
-if [ -z "$MEMORY" ]; then
-	printf "invalid arguments: memory must be set using --memory=<memory>\n" 1>&2
+if [ -z "$SERVER_MEMORY" ]; then
+	printf "invalid arguments: server memory must be set using --server-memory=<memory>\n" 1>&2
 	exit 1
 fi
-if [ -z "$CPUS" ]; then
-	printf "invalid arguments: cpus must be set using --cpus=<cpus>\n" 1>&2
+if [ -z "$CPU_LIMIT" ]; then
+	printf "invalid arguments: cpu limit must be set using --cpu-limit=<cpus>\n" 1>&2
 	exit 1
 fi
 if [ -z "$BENCHMARK_DURATION" ]; then
@@ -92,7 +92,7 @@ fi
 	SCRIPT_PATH=$(readlink -f -- "${SCRIPT_PATH}")
 	cd "${SCRIPT_PATH}"
 
-	DIR_NAME="cpu-$CPUS-memory-$MEMORY-duration-$BENCHMARK_DURATION"
+	DIR_NAME="cpu-$CPU_LIMIT-memory-$SERVER_MEMORY-duration-$BENCHMARK_DURATION"
 	RUN_DIR="$MEASUREMENTS_DIR/$DIR_NAME"
 
 	if [ -d "$RUN_DIR" ]; then
@@ -106,9 +106,9 @@ fi
 	CONFIG_FILE="$RUN_DIR/config.yml"
 	printf "Saving benchmark configuration to %s\n" "$CONFIG_FILE" 1>&2
 	touch "$CONFIG_FILE"
-	printf "cpus: %d\n" "$CPUS" >"$CONFIG_FILE"
+	printf "cpus: %d\n" "$CPU_LIMIT" >"$CONFIG_FILE"
 	{
-		printf "memory: %s\n" "$MEMORY"
+		printf "memory: %s\n" "$SERVER_MEMORY"
 		printf "server_ip: %s\n" "$SERVER_IP"
 		printf "duration: %d\n" "$BENCHMARK_DURATION"
 		printf "minimum_rps: %d\n" "$MINIMUM_RPS"
@@ -117,19 +117,24 @@ fi
 	} >>"$CONFIG_FILE"
 
 	printf "Starting Memcached server on %s\n" "$SERVER_IP"
+
+	MEMORY_LIMIT="$((SERVER_MEMORY + 1024))MB"
 	bash remote_docker.sh \
 		--ip="$SERVER_IP" \
 		--user="$USER" \
-		--cpus="$CPUS" \
-		--memory="$MEMORY" \
+		--cpu-limit="$CPU_LIMIT" \
+		--memory-limit="$MEMORY_LIMIT" \
+		--server-memory="$SERVER_MEMORY" \
 		--cmd="up"
+
 	WAIT=10
 	printf "Waiting for %d seconds on server.\n" "$WAIT"
 	sleep "$WAIT"
-	SERVERS_FILE="$PWD/tmp_servers.txt"
-	printf "%s, %d\n" "$SERVER_IP" "$PORT" >"$SERVERS_FILE"
+
+	SERVERS_FILE=$(mktemp)
+	printf "%s, %d\n" "$SERVER_IP" "$MEMCACHED_PORT" >"$SERVERS_FILE"
 	SERVERS_FILE="$SERVERS_FILE" \
-		SERVER_MEMORY="$MEMORY" \
+		SERVER_MEMORY="$SERVER_MEMORY" \
 		MINIMUM_RPS="$MINIMUM_RPS" \
 		MAXIMUM_RPS="$MAXIMUM_RPS" \
 		BENCHMARK_DURATION="$BENCHMARK_DURATION" \
@@ -138,17 +143,19 @@ fi
 		--force-recreate --build
 
 	SERVERS_FILE="$SERVERS_FILE" \
-		SERVER_MEMORY="$MEMORY" \
+		SERVER_MEMORY="$SERVER_MEMORY" \
 		MINIMUM_RPS="$MINIMUM_RPS" \
 		MAXIMUM_RPS="$MAXIMUM_RPS" \
 		BENCHMARK_DURATION="$BENCHMARK_DURATION" \
 		STEP_DURATION="$STEP_DURATION" \
 		docker compose logs --no-log-prefix memcached-client >"$RUN_DIR/summary.log"
 
-	bash remote_docker.sh --ip="$SERVER_IP" \
+	bash remote_docker.sh \
+		--ip="$SERVER_IP" \
 		--user="$USER" \
-		--cpus="$CPUS" \
-		--memory="$MEMORY" \
+		--cpu-limit="$CPU_LIMIT" \
+		--memory-limit="$MEMORY_LIMIT" \
+		--server-memory="$SERVER_MEMORY" \
 		--cmd="down"
 	rm "$SERVERS_FILE"
 )
