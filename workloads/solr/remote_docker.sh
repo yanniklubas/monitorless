@@ -1,5 +1,12 @@
 #!/usr/bin/env bash
 
+SERVER_IP=""
+USER=""
+CPU_LIMIT=""
+MEMORY_LIMIT=""
+HEAP_MEMORY=""
+DOCKER_CMD=""
+
 for opt in "$@"; do
 	case "$opt" in
 	--ip=*)
@@ -14,12 +21,12 @@ for opt in "$@"; do
 		CPU_LIMIT="${opt#*=}"
 		shift
 		;;
-	--heap-memory=*)
-		HEAP_MEMORY="${opt#*=}"
-		shift
-		;;
 	--memory-limit=*)
 		MEMORY_LIMIT="${opt#*=}"
+		shift
+		;;
+	--heap-memory=*)
+		HEAP_MEMORY="${opt#*=}"
 		shift
 		;;
 	--cmd=*)
