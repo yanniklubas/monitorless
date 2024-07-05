@@ -61,17 +61,17 @@ echo MG_PROMETHEUS_VOLUME_NAME='"$VOLUME_NAME"' > .env
 	for t in "${BENCHMARKS[@]}"; do
 		oIFS="$IFS"
 		IFS=' '
-		read -ra RUN <<<"$t"
+		read -ra CONFIG <<<"$t"
 		IFS="$oIFS"
 		unset oIFS
-		CPU="${RUN[0]}"
-		MEMORY="${RUN[1]}"
-		PROFILE="${RUN[2]}"
+		CPU_LIMIT="${CONFIG[0]}"
+		HEAP_MEMORY="${CONFIG[1]}"
+		PROFILE="${CONFIG[2]}"
 
 		bash run_workload.sh \
 			--profile="$PWD/$PROFILE" \
-			--cpu-limit="$CPU" \
-			--heap-memory="$MEMORY" \
+			--cpu-limit="$CPU_LIMIT" \
+			--heap-memory="$HEAP_MEMORY" \
 			--ip="$SERVER_IP" \
 			--threads=256 \
 			--vuser="$VIRTUAL_USERS" \
