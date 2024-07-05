@@ -125,8 +125,6 @@ if [ -z "$MEASUREMENTS_DIR" ]; then
 	exit 1
 fi
 
-exit
-
 # +++++++++++++++++++
 (
 	SCRIPT_PATH=$(dirname -- "${BASH_SOURCE[0]}")

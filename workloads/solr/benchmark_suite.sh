@@ -67,8 +67,6 @@ echo MG_PROMETHEUS_VOLUME_NAME='"$VOLUME_NAME"' > .env
 		CPU="${RUN[0]}"
 		MEMORY="${RUN[1]}"
 		PROFILE="${RUN[2]}"
-		DURATION_SEC=$(wc -l <"$PWD/$PROFILE")
-		DURATION_SEC=$(echo "$DURATION_SEC" | xargs)
 
 		bash run_workload.sh \
 			--profile="$PWD/$PROFILE" \
