@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-set -euo pipefail # abort on nonzero exit status, unbound variable and don't hide errors within pipes
+set -euo pipefail
+
 parse_config() {
 	local file="$1"
 	while IFS=$'[ \t]*=[ \t]*' read -r name value; do
