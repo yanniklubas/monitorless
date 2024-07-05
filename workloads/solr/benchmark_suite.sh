@@ -37,7 +37,7 @@ fi
 	SCRIPT_PATH=$(readlink -f -- "${SCRIPT_PATH}")
 	cd "${SCRIPT_PATH}" || exit 1
 	# Download dataset if the web_search_data container does not exist
-	ssh "$USER"@"$SERVER_IP" '[ ! "$(docker ps -a | grep "web_search_dataset")" ] && docker run --name web_search_dataset cloudsuite/web-search:dataset'
+	ssh "$USER"@"$SERVER_IP" 'if [ ! "$(docker ps -a | grep "web_search_dataset")" ]; then docker run --name web_search_dataset cloudsuite/web-search:dataset; fi'
 
 	# Copy load generator .jar, if not exists
 	JAR_NAME="httploadgenerator.jar"
