@@ -3,11 +3,11 @@ set -euo pipefail # abort on nonzero exit status, unbound variable and don't hid
 
 (
 	SERVER_IP="10.128.0.5"
-	BENCHMARKS=("linear300" "linear600" "sine20-300" "sine250")
+	BENCHMARKS=("linear300" "linear600" "sine20-300" "sine250" "sine150" "sinnoise100")
 	DURATION_SEC=600
-	VIRTUAL_USERS=500
+	VIRTUAL_USERS=1800
 	TIMEOUT_MS=3000
-	WARMUP_DURATION_SEC=120
+	WARMUP_DURATION_SEC=240
 	WARMUP_RPS=10
 	WARMUP_PAUSE_SEC=10
 	LOAD_GENERATOR_LOC="$HOME/load_generator"
