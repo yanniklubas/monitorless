@@ -105,7 +105,7 @@ remote_docker() {
 			--cmd="$cmd"
 		;;
 	"cassandra")
-		if [ -n "$6" ]; then
+		if [ "$#" -eq 6 ]; then
 			bash "$file" \
 				--ip="$SERVER_IP" \
 				--user="$USER" \
