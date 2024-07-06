@@ -291,7 +291,7 @@ start_workload() {
 				BENCHMARK_RUN="$run_dir" \
 				PROFILE="$profile" \
 				BENCHMARK_DURATION="$DURATION_SEC" \
-				DIRECTOR_THREADS="256" \
+				THREADS="256" \
 				VIRTUAL_USERS="$VIRTUAL_USERS" \
 				TIMEOUT="$TIMEOUT_MS" \
 				WARMUP_DURATION="0" \
