@@ -105,15 +105,25 @@ remote_docker() {
 			--cmd="$cmd"
 		;;
 	"cassandra")
-		local services="$6"
-		bash "$file" \
-			--ip="$SERVER_IP" \
-			--user="$USER" \
-			--cpu-limit="$cpu_limit" \
-			--memory-limit="$memory_limit" \
-			--heap-memory="$memory" \
-			--services="$services" \
-			--cmd="$cmd"
+		if [ -n "$6" ]; then
+			bash "$file" \
+				--ip="$SERVER_IP" \
+				--user="$USER" \
+				--cpu-limit="$cpu_limit" \
+				--memory-limit="$memory_limit" \
+				--heap-memory="$memory" \
+				--services="$6" \
+				--cmd="$cmd"
+		else
+			bash "$file" \
+				--ip="$SERVER_IP" \
+				--user="$USER" \
+				--cpu-limit="$cpu_limit" \
+				--memory-limit="$memory_limit" \
+				--heap-memory="$memory" \
+				--cmd="$cmd"
+
+		fi
 		;;
 	"memcached")
 		bash "$file" \
