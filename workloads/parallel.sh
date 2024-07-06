@@ -197,7 +197,7 @@ warmup() {
 		(
 			cd "memcached"
 			local servers_file
-			servers_file=$(mktemp)
+			servers_file="$PWD/servers.txt"
 			local memory="$2"
 			printf "%s, %s\n" "$SERVER_IP" "$MEMCACHED_PORT" >"$servers_file"
 			SERVERS_FILE="$servers_file" \
@@ -342,7 +342,7 @@ start_workload() {
 			local max_rps="$4"
 			local memory="$5"
 			local servers_file
-			servers_file=$(mktemp)
+			servers_file="$PWD/servers.txt"
 			printf "%s, %s\n" "$SERVER_IP" "$MEMCACHED_PORT" >"$servers_file"
 			SERVERS_FILE="$servers_file" \
 				SERVER_MEMORY="$memory" \
