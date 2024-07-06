@@ -379,6 +379,7 @@ for ((i = 0; i < ${#BENCHMARKS[@]}; i += 2)); do
 
 	if [ "$NAME_1" = "cassandra" ] || [ "$NAME_2" = "cassandra" ]; then
 		if [ "$SEED" -eq 1 ]; then
+			remote_docker "cassandra" "8" "32" "28" "up" "cassandra"
 			cd "cassandra"
 			printf "Seeding cassandra...\n" >&2
 			DO_SEED=1 \
