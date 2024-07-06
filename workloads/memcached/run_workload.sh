@@ -131,7 +131,7 @@ fi
 	printf "Waiting for %d seconds on server.\n" "$WAIT"
 	sleep "$WAIT"
 
-	SERVERS_FILE=$(mktemp)
+	SERVERS_FILE="$PWD/servers.txt"
 	printf "%s, %d\n" "$SERVER_IP" "$MEMCACHED_PORT" >"$SERVERS_FILE"
 	SERVERS_FILE="$SERVERS_FILE" \
 		SERVER_MEMORY="$SERVER_MEMORY" \
