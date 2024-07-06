@@ -6,16 +6,16 @@ set -eou pipefail
 # Cassandra: NUMBER, CPU_LIMIT, HEAP_MEMORY, WORKLOAD, MINIMUM-RPS, MAXIMUM-RPS
 # Memcached: NUMBER, CPU_LIMIT, SERVER_MEMORY, MINIMUM-RPS, MAXIMUM-RPS
 BENCHMARKS=(
-	"solr 3 8 8 sinnoise1000.csv"             # 3
-	"cassandra 14 6 28 workloada 15000 25000" # 14
-	"solr 4 8 8 sinnoise1000.csv"             # 4
-	"cassandra 15 6 28 workloadb 10000 15000" # 15
-	"solr 5 3 8 sinnoise1000.csv"             # 5
-	"cassandra 16 6 28 workloadd 10000 25000" # 16
-	"solr 6 1.5 8 sinnoise1000.csv"           # 6
-	"cassandra 17 6 28 workloadb 5000 20000"  # 17
-	"memcached 10 8 4096 10000 65000"         # 10
-	"cassandra 18 6 28 workloadb 10000 10000" # 18
+	"solr 3 8 8 sinnoise1000.csv"        # 3
+	"cassandra 14 6 28 workloada 25 300" # 14
+	"solr 4 8 8 sinnoise1000.csv"        # 4
+	"cassandra 15 6 28 workloadb 25 300" # 15
+	"solr 6 1.5 8 sinnoise1000.csv"      # 6
+	"cassandra 17 6 28 workloadb 25 300" # 17
+	"memcached 10 8 4096 10000 90000"    # 10
+	"cassandra 18 6 28 workloadb 25 300" # 18
+	"solr 5 3 8 sinnoise1000.csv"        # 5
+	"cassandra 16 6 28 workloadd 25 300" # 16
 )
 DURATION_SEC=600
 VIRTUAL_USERS=3000
