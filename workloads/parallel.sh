@@ -473,7 +473,7 @@ rm $HOME/monitorless/applications/solr/.env
 rm $HOME/monitorless/applications/memcached/.env
 rm $HOME/monitorless/applications/cassandra/.env
 cd $HOME/monitorless/applications/cassandra
-CPUS=1 docker compose down -v
+CPU_LIMIT=1 MEMORY_LIMIT=1GB docker compose down -v
 docker volume rm '"$SOLR_VOLUME_NAME"'
 docker volume rm '"$CASSANDRA_VOLUME_NAME"'
 docker volume rm '"$MEMCACHED_VOLUME_NAME"''
