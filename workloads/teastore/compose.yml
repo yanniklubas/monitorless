@@ -15,7 +15,7 @@ services:
       - "${YAML_PATH?No yaml path specified}:/opt/load_generator.yml:ro"
       - "${BENCHMARK_RUN?No benchmark run directory defined}:/loadgenerator:rw"
       - "${PROFILE?No profile defined}:/opt/profile.csv"
-    entrypoint: 
+    entrypoint:
       [
         "java",
         "-jar",
@@ -29,8 +29,6 @@ services:
         "/opt/load_generator.yml",
         "--load",
         "/opt/profile.csv",
-        "--arrival-profile-duration",
-        "${BENCHMARK_DURATION?No duration defined}",
         "-o",
         "summary_out.csv",
         "--ro",

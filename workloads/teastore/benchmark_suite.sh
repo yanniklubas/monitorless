@@ -4,7 +4,6 @@ set -euo pipefail # abort on nonzero exit status, unbound variable and don't hid
 (
 	SERVER_IP="10.128.0.5"
 	BENCHMARKS=("linear300" "linear600" "sine20-300" "sine250" "sine150" "sinnoise100")
-	DURATION_SEC=600
 	VIRTUAL_USERS=1800
 	TIMEOUT_MS=3000
 	WARMUP_DURATION_SEC=240
@@ -51,6 +50,8 @@ echo MG_PROMETHEUS_VOLUME_NAME='"$VOLUME_NAME"' > .env
 		mkdir -p "$RUN_DIR"
 
 		PROFILE="$PWD/$t.csv"
+		BENCHMARK_DURATION=$(wc -l <"$PROFILE")
+		BENCHMARK_DURATION=$(echo "$BENCHMARK_DURATION" | xargs)
 		WORKLOAD_FILE="$PWD/workload.yml"
 		CONFIG_FILE="$RUN_DIR/config.yml"
 		printf "Saving benchmark configuration to %s\n" "$CONFIG_FILE" 1>&2
@@ -58,7 +59,7 @@ echo MG_PROMETHEUS_VOLUME_NAME='"$VOLUME_NAME"' > .env
 		printf "profile: %s\n" "$PROFILE" >"$CONFIG_FILE"
 		{
 			printf "server_ip: %s\n" "$SERVER_IP"
-			printf "duration: %d\n" "$DURATION_SEC"
+			printf "duration: %d\n" "$BENCHMARK_DURATION"
 			printf "threads: %d\n" "256"
 			printf "virtual_users: %d\n" "$VIRTUAL_USERS"
 			printf "timeout: %d\n" "$TIMEOUT_MS"
@@ -87,8 +88,21 @@ echo MG_PROMETHEUS_VOLUME_NAME='"$VOLUME_NAME"' > .env
 		sed -e 's/{{APPLICATION_HOST}}/'"$SERVER_IP"':8080/g' "$WORKLOAD_FILE" >"$YAML_FILE"
 		YAML_PATH="$YAML_FILE" \
 			BENCHMARK_RUN="$RUN_DIR" \
+			PROFILE="$PWD/linear120.csv" \
+			DIRECTOR_THREADS="256" \
+			VIRTUAL_USERS="$VIRTUAL_USERS" \
+			TIMEOUT="$TIMEOUT_MS" \
+			WARMUP_DURATION="$WARMUP_DURATION_SEC" \
+			WARMUP_RPS="$WARMUP_RPS" \
+			WARMUP_PAUSE="$WARMUP_PAUSE_SEC" \
+			docker compose up \
+			--build --abort-on-container-exit --force-recreate
+		rm "$RUN_DIR/summary_out.csv"
+		rm "$RUN_DIR/request_out.csv"
+
+		YAML_PATH="$YAML_FILE" \
+			BENCHMARK_RUN="$RUN_DIR" \
 			PROFILE="$PROFILE" \
-			BENCHMARK_DURATION="$DURATION_SEC" \
 			DIRECTOR_THREADS="256" \
 			VIRTUAL_USERS="$VIRTUAL_USERS" \
 			TIMEOUT="$TIMEOUT_MS" \
