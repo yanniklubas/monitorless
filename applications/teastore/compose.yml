@@ -20,6 +20,8 @@ services:
       resources:
         limits:
           cpus: '0.5'
+    depends_on:
+      - registry
   persistence:
     image: descartesresearch/teastore-persistence
     expose:
@@ -35,6 +37,9 @@ services:
       resources:
         limits:
           cpus: '0.5'
+    depends_on:
+      - registry
+      - db
   auth:
     image: descartesresearch/teastore-auth
     expose:
@@ -48,6 +53,8 @@ services:
       resources:
         limits:
           cpus: '0.5'
+    depends_on:
+      - registry
   image:
     image: descartesresearch/teastore-image
     expose:
@@ -59,8 +66,10 @@ services:
       resources:
         limits:
           cpus: '0.5'
+    depends_on:
+      - registry
   recommender:
-    image: descartesresearch/teastore-recommender
+    image: descartesresearch/teastore-recommender:development
     expose:
       - "8080"
     environment:
@@ -72,6 +81,9 @@ services:
       resources:
         limits:
           cpus: '0.5'
+    depends_on:
+      - registry
+      - persistence
   webui:
     image: descartesresearch/teastore-webui
     expose:
@@ -87,6 +99,8 @@ services:
       resources:
         limits:
           cpus: '2.0'
+    depends_on:
+      - registry
   cadvisor:
     privileged: true
     image: gcr.io/cadvisor/cadvisor:v0.47.2

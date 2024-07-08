@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -euo pipefail # abort on nonzero exit status, unbound variable and don't hide errors within pipes
+set -euo pipefail
 
 (
 	SERVER_IP="10.128.0.5"
@@ -78,8 +78,8 @@ echo MG_PROMETHEUS_VOLUME_NAME='"$VOLUME_NAME"' > .env
 		printf "Waiting for TeaStore...\n"
 		until [ "$ready" -eq 1 ]; do
 			ready_count=$(curl --silent "$SERVER_IP:8080/tools.descartes.teastore.webui/status" | grep "OK" -c)
-			printf "%s/4\n" "$ready_count"
-			if [ "$ready_count" -eq 4 ]; then
+			printf "%s/5\n" "$ready_count"
+			if [ "$ready_count" -eq 5 ]; then
 				ready=1
 			fi
 			sleep 5
@@ -88,27 +88,13 @@ echo MG_PROMETHEUS_VOLUME_NAME='"$VOLUME_NAME"' > .env
 		sed -e 's/{{APPLICATION_HOST}}/'"$SERVER_IP"':8080/g' "$WORKLOAD_FILE" >"$YAML_FILE"
 		YAML_PATH="$YAML_FILE" \
 			BENCHMARK_RUN="$RUN_DIR" \
-			PROFILE="$PWD/linear120.csv" \
-			DIRECTOR_THREADS="256" \
-			VIRTUAL_USERS="$VIRTUAL_USERS" \
-			TIMEOUT="$TIMEOUT_MS" \
-			WARMUP_DURATION="0" \
-			WARMUP_RPS="0" \
-			WARMUP_PAUSE="0" \
-			docker compose up \
-			--build --abort-on-container-exit --force-recreate
-		rm "$RUN_DIR/summary_out.csv"
-		rm "$RUN_DIR/request_out.csv"
-
-		YAML_PATH="$YAML_FILE" \
-			BENCHMARK_RUN="$RUN_DIR" \
 			PROFILE="$PROFILE" \
 			DIRECTOR_THREADS="256" \
 			VIRTUAL_USERS="$VIRTUAL_USERS" \
 			TIMEOUT="$TIMEOUT_MS" \
-			WARMUP_DURATION="0" \
-			WARMUP_RPS="0" \
-			WARMUP_PAUSE="0" \
+			WARMUP_DURATION="$WARMUP_DURATION_SEC" \
+			WARMUP_RPS="$WARMUP_RPS" \
+			WARMUP_PAUSE="$WARMUP_PAUSE" \
 			docker compose up \
 			--build --abort-on-container-exit --force-recreate
 
