@@ -94,7 +94,7 @@ echo MG_PROMETHEUS_VOLUME_NAME='"$VOLUME_NAME"' > .env
 			TIMEOUT="$TIMEOUT_MS" \
 			WARMUP_DURATION="$WARMUP_DURATION_SEC" \
 			WARMUP_RPS="$WARMUP_RPS" \
-			WARMUP_PAUSE="$WARMUP_PAUSE" \
+			WARMUP_PAUSE="$WARMUP_PAUSE_SEC" \
 			docker compose up \
 			--build --abort-on-container-exit --force-recreate
 
