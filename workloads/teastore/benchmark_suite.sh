@@ -3,7 +3,7 @@ set -euo pipefail
 
 (
 	SERVER_IP="10.128.0.5"
-	BENCHMARKS=("linear300" "linear600" "sine20-300" "sine250" "sine150" "sinnoise100")
+	BENCHMARKS=("linear300" "linear600" "sine20-300" "sine250")
 	VIRTUAL_USERS=1800
 	TIMEOUT_MS=3000
 	WARMUP_DURATION_SEC=240
