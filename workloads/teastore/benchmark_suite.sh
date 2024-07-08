@@ -92,9 +92,9 @@ echo MG_PROMETHEUS_VOLUME_NAME='"$VOLUME_NAME"' > .env
 			DIRECTOR_THREADS="256" \
 			VIRTUAL_USERS="$VIRTUAL_USERS" \
 			TIMEOUT="$TIMEOUT_MS" \
-			WARMUP_DURATION="$WARMUP_DURATION_SEC" \
-			WARMUP_RPS="$WARMUP_RPS" \
-			WARMUP_PAUSE="$WARMUP_PAUSE_SEC" \
+			WARMUP_DURATION="0" \
+			WARMUP_RPS="0" \
+			WARMUP_PAUSE="0" \
 			docker compose up \
 			--build --abort-on-container-exit --force-recreate
 		rm "$RUN_DIR/summary_out.csv"
@@ -106,9 +106,9 @@ echo MG_PROMETHEUS_VOLUME_NAME='"$VOLUME_NAME"' > .env
 			DIRECTOR_THREADS="256" \
 			VIRTUAL_USERS="$VIRTUAL_USERS" \
 			TIMEOUT="$TIMEOUT_MS" \
-			WARMUP_DURATION="$WARMUP_DURATION_SEC" \
-			WARMUP_RPS="$WARMUP_RPS" \
-			WARMUP_PAUSE="$WARMUP_PAUSE_SEC" \
+			WARMUP_DURATION="0" \
+			WARMUP_RPS="0" \
+			WARMUP_PAUSE="0" \
 			docker compose up \
 			--build --abort-on-container-exit --force-recreate
 
