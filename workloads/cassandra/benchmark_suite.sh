@@ -4,7 +4,7 @@ set -euo pipefail
 # Format: CPU_LIMIT (in cores), HEAP_MEMORY (in GB), WORKLOAD, MINIMUM-RPS, MAXIMUM_RPS
 # MEMORY_LIMIT := HEAP_MEMORY + 4GB
 # Workload ordering based on https://github.com/brianfrankcooper/YCSB/wiki/Core-Workloads#running-the-workloads
-BENCHMARKS=("6 28 workloada 300 10000" "6 28 workloadb 300 10000" "1 28 workloadf 200 1000" "6 28 workloadd 300 10000")
+BENCHMARKS=("6 28 workloada 150 5000" "6 28 workloadb 100 3000" "1 28 workloadf 200 2000" "6 28 workloadd 300 10000")
 RECORD_COUNT=20000000
 DURATION_SEC=600
 STEP_DURATION_SEC=30
